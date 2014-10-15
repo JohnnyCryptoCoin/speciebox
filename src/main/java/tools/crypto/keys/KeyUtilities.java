@@ -22,7 +22,7 @@ public class KeyUtilities {
     // RFC 4226 specifies big endian as the method for converting the counter to data to hash.
     protected static byte[] getBigEndianBytes(long input)
     {
-    	ByteBuffer inBytes = ByteBuffer.allocate(Long.BYTES);
+    	ByteBuffer inBytes = ByteBuffer.allocate(Long.SIZE);
     	inBytes.putLong(input);
     	
     	return getBigEndianBytes(inBytes.array());
@@ -30,7 +30,7 @@ public class KeyUtilities {
     
 	protected static byte[] getBigEndianBytes(int input)
     {
-			ByteBuffer inBytes = ByteBuffer.allocate(Integer.BYTES);
+			ByteBuffer inBytes = ByteBuffer.allocate(Integer.SIZE);
 			inBytes.putLong(input);
 	
 			return getBigEndianBytes(inBytes.array());
