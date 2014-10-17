@@ -6,19 +6,23 @@ import java.util.Scanner;
 
 import org.junit.Test;
 
+import tools.crypto.keys.TestKey;
 import tools.sms.TwilioSMSManager;
 import users.User;
 
 public class UserTest {
 	
 	private String uuid = "16134073789";
+	private TestKey key = new TestKey(uuid.getBytes());
 	private User user = new User(uuid);
-	@Test
+	
+	
+	//@Test
 	public void testLogin() {
 		TwilioSMSManager smsManager =  new TwilioSMSManager();
 		
 		Scanner in = new Scanner(System.in);
-		user.sendLoginToken();
+		user.sendLoginToken(key.getHexKey());
 		String token = in.nextLine();
 		if(user.verifyToken(token)){
 			user.sendText("YOU LOGGED IN");
@@ -27,6 +31,11 @@ public class UserTest {
 			user.sendText("YOU FAILED TO LOG IN. Too slow or wrong token");
 			assertTrue(false);
 		}
+	}
+	
+	@Test
+	public void testGetUUID(){
+		assertEquals(uuid, user.getUUID());
 	}
 
 }

@@ -46,7 +46,7 @@ public class TOTP {
 
      // This method converts a HEX string to Byte[]
      private byte[] hexStr2Bytes(String hex){
-         // Adding one byte to get the right conversion
+    	 // Adding one byte to get the right conversion
          // Values starting with "0" can be converted
          byte[] bArray = new BigInteger("10" + hex,16).toByteArray();
 
@@ -59,13 +59,13 @@ public class TOTP {
 
      private final long[] DIGITS_POWER
      // 0  1   2    3     4      5       6        7         8          9           10
-     = {1L,10L,100L,1000L,10000L,100000L,1000000L,10000000L,100000000L,1000000000L,10000000000L };
+     = {1L,10L,100L,1000L,10000L,100000L,1000000L,10000000L,100000000L,1000000000L,10000000000L, 100000000000L, 1000000000000L, 10000000000000L, 10000000000000L };
 
     // These methods generate a TOTP value for the given set of parameters.
      public String generateTOTP(String key, int returnDigits){
          return generateTOTP(key, currentTimeStampUTC(), returnDigits, "HmacSHA1");
      }
-	 
+     
      public String generateTOTP256(String key, int returnDigits){
          return generateTOTP(key, currentTimeStampUTC(), returnDigits, "HmacSHA256");
      }
