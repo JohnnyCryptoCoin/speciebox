@@ -1,11 +1,9 @@
 package tools.crypto.keys;
 
-import org.bouncycastle.asn1.crmf.EncKeyWithID;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.macs.HMac;
 import org.bouncycastle.crypto.params.KeyParameter;
-import org.bouncycastle.util.encoders.Hex;
 
 
 public class TestKey implements IKeyProvider {

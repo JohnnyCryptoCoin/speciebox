@@ -1,5 +1,6 @@
 package test.tools.cryptography;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 import org.junit.Test;
@@ -19,6 +20,13 @@ public class TOTPTest {
 	public void testGetOTPShouldReturnAnOTP(){
 		when(key.getHexKey()).thenReturn("D9562EF65DA0AE19293FEE5242EF4B1C992535B94F6729C89FED5708D1F36A05");
 		String otp = totp.generateTOTP(key.getHexKey(), MSG_DIGITS);
-		System.out.println(otp);
+	}
+	
+	@Test
+	public void testGetMultipleOTPsShouldReturnTheSameOTP(){
+		when(key.getHexKey()).thenReturn("D9562EF65DA0AE19293FEE5242EF4B1C992535B94F6729C89FED5708D1F36A05");
+		String otp = totp.generateTOTP(key.getHexKey(), MSG_DIGITS);
+		String otp2 = totp.generateTOTP(key.getHexKey(), MSG_DIGITS);
+		assertEquals(otp, otp2);
 	}
 }

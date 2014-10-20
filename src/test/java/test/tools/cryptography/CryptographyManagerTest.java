@@ -15,7 +15,7 @@ public class CryptographyManagerTest {
 	private static byte[] UUID = "SIMEON:6134073789".getBytes();
 	private TestKey key = new TestKey(UUID);
 	
-	private CryptographyManager manager = new CryptographyManager(6,key);
+	private CryptographyManager manager = new CryptographyManager(3,key);
 	@Mock TOTP otpGenerator;
 	
 	@Test
@@ -23,7 +23,6 @@ public class CryptographyManagerTest {
 		String otp = manager.getOTP();
 		String otp2 = manager.getOTP(key.getHexString("SIMEON".getBytes()));
 		
-		System.out.println(otp);
 		assertNotNull(otp);
 		assertFalse(otp.equals(otp2));
 	}
@@ -32,7 +31,7 @@ public class CryptographyManagerTest {
 	public void testVerifyOTPShouldMatchEnteredTokenWithGeneratedOne() throws InterruptedException{
 		String otp = manager.getOTP();
 		
-		Thread.sleep(2600L);
+		Thread.sleep(1100L);
 		assertNotNull(otp);
 		assertTrue(manager.verifyOTP(key.getHexKey(), otp));
 	}
@@ -41,7 +40,7 @@ public class CryptographyManagerTest {
 	public void testVerifyOTPShouldFailIf30SecondsPass() throws InterruptedException{
 		String otp = manager.getOTP();
 		
-		Thread.sleep(7100L);
+		Thread.sleep(3100L);
 		assertNotNull(otp);
 		assertFalse(manager.verifyOTP(key.getHexKey(), otp));
 	}

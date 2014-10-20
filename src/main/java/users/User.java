@@ -23,11 +23,11 @@ public class User
     this.cryptoManager = new CryptographyManager(TIMEOUT, KEY);
   }
    
-  protected void sendText(String message){
+  public void sendText(String message){
 	  smsManager.sendMessage(UUID, message);
   }
   
-  protected void sendLoginToken(String OTPKey){
+  public void sendLoginToken(String OTPKey){
 	  StringBuilder sb = new StringBuilder();
 	  sb.append("This token is good for only");
 	  sb.append(TIMEOUT);
@@ -37,15 +37,16 @@ public class User
 	  sendText(sb.toString());
   }
   
-  protected boolean verifyToken(String token){
+  public boolean verifyToken(String token){
 	  return cryptoManager.verifyOTP(KEY.getHexKey(), token);
   }
   
-  protected boolean createUser() {
+  public boolean createUser() {
 	  //connect to DB
 	  //take UUID (phone number, hashed P#) and store it in UUID - Phone number table
 	  //add user details to uuid-details table
-	  return false;
+	  System.out.println("Adding user to DB -- STUBBED METHOD");
+	  return true;
   }
   
   protected String getUUID(){
