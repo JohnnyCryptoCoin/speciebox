@@ -50,16 +50,23 @@ import static com.google.common.base.Preconditions.checkState;
 /**
  * Extention of bitcoinj's WalletAppKit for our own purposes.
  * 
- * Utility class that wraps the boilerplate needed to set up a new SPV bitcoinj app. Instantiate it with a directory
- * and file prefix, optionally configure a few things, then use startAsync and optionally awaitRunning. The object will
- * construct and configure a {@link BlockChain}, {@link SPVBlockStore}, {@link Wallet} and {@link PeerGroup}. Depending
- * on the value of the blockingStartup property, startup will be considered complete once the block chain has fully
- * synchronized, so it can take a while.
+ * Utility class that wraps the boilerplate needed to set up a new Simplified Payment Verification (SPV) bitcoinj app. 
+ * Instantiate it with a directory and file prefix, optionally configure a few things, then use startAsync 
+ * and optionally awaitRunning. The object will construct and configure a BlockChain, SPVBlockStore, Wallet and PeerGroup. 
+ * 
+ * This WalletKit will continue to be extended once we have a server environment, as opposed to only demos on localhost.
+ * These files being stored will need design and security decisions made once the impact of their unintended release is
+ * better understood. Let's not shoot ourselves in the foot from the getgo here.
+ * 
+ * FROM bitcoingj's AbstractIdleService Docs:
+ * 
+ * Depending on the value of the blockingStartup property, startup will be considered complete once the block chain 
+ * has fully synchronized, so it can take a while.
  *
- * <p>To add listeners and modify the objects that are constructed, you can either do that by overriding the
- * {@link #onSetupCompleted()} method (which will run on a background thread) and make your changes there,
+ * To add listeners and modify the objects that are constructed, you can either do that by overriding the
+ * onSetupCompleted() method (which will run on a background thread) and make your changes there,
  * or by waiting for the service to start and then accessing the objects from wherever you want. However, you cannot
- * access the objects this class creates until startup is complete.</p>
+ * access the objects this class creates until startup is complete.
  *
  */
 public class WalletKit extends AbstractIdleService {
@@ -81,7 +88,6 @@ public class WalletKit extends AbstractIdleService {
     protected boolean autoStop = true;
     protected InputStream checkpoints;
     protected boolean blockingStartup = true;
-    protected boolean useTor = false;   // Perhaps in future we can change this to true.
     protected String userAgent, version;
     protected WalletProtobufSerializer.WalletFactory walletFactory;
     @Nullable protected DeterministicSeed restoreFromSeed;
@@ -123,8 +129,8 @@ public class WalletKit extends AbstractIdleService {
     }
 
     /**
-     * If you want to learn about the sync process, you can provide a listener here. For instance, a
-     * {@link DownloadListener} is a good choice.
+     * If you want to learn about the sync process, you can provide a listener here. 
+     * For instance, a DownloadListener is a good choice.
      */
     public WalletKit setDownloadListener(PeerEventListener listener) {
         this.downloadListener = listener;
@@ -139,7 +145,7 @@ public class WalletKit extends AbstractIdleService {
 
     /**
      * If set, the file is expected to contain a checkpoints file calculated with BuildCheckpoints. It makes initial
-     * block sync faster for new users - please refer to the documentation on the bitcoinj website for further details.
+     * block sync faster for new users - refer to the documentation on the bitcoinj website for further details.
      */
     public WalletKit setCheckpoints(InputStream checkpoints) {
         if (this.checkpoints != null)
@@ -150,7 +156,7 @@ public class WalletKit extends AbstractIdleService {
 
     /**
      * If true (the default) then the startup of this service won't be considered complete until the network has been
-     * brought up, peer connections established and the block chain synchronised. Therefore {@link #startAndWait()} can
+     * brought up, peer connections established and the block chain synchronised. Therefore startAndWait() can
      * potentially take a very long time. If false, then startup is considered complete once the network activity
      * begins and peer connections/block chain sync will continue in the background.
      */
@@ -161,8 +167,7 @@ public class WalletKit extends AbstractIdleService {
 
     /**
      * Sets the string that will appear in the subver field of the version message.
-     * @param userAgent A short string that should be the name of your app, e.g. "My Wallet"
-     * @param version A short string that contains the version number, e.g. "1.0-BETA"
+     * Should be SpecieBox and the Version Number. These fields will probably come from the DB via web
      */
     public WalletKit setUserAgent(String userAgent, String version) {
         this.userAgent = checkNotNull(userAgent);
@@ -171,21 +176,20 @@ public class WalletKit extends AbstractIdleService {
     }
 
     /**
-     * If called, then an embedded Tor client library will be used to connect to the P2P network. The user does not need
-     * any additional software for this: it's all pure Java. As of April 2014 <b>this mode is experimental</b>.
+     * If called, then an embedded Tor client library will be used to connect to the P2P network. 
+     * The user does not need any additional software for this. 
+     * As of April 2014 this mode is experimental in bitcoinj library, implications are not fully understood.
      */
-    public WalletKit useTor() {
-        this.useTor = true;
-        return this;
-    }
+//	  public boolean useTor = false; //True if we want to. Could add a LOT of security, but might be too high of cost
+//    public WalletKit useTor() {
+//        this.useTor = true;
+//        return this;
+//    }
 
     /**
-     * If a seed is set here then any existing wallet that matches the file name will be renamed to a backup name,
-     * the chain file will be deleted, and the wallet object will be instantiated with the given seed instead of
-     * a fresh one being created. This is intended for restoring a wallet from the original seed. To implement restore
-     * you would shut down the existing appkit, if any, then recreate it with the seed given by the user, then start
-     * up the new kit. The next time your app starts it should work as normal (that is, don't keep calling this each
-     * time).
+     * If a seed is set here then any existing wallet that matches the file name will be 
+     * renamed to a backup name, the chain file will be deleted, and the wallet object will 
+     * be instantiated with the given seed instead of a fresh one being created.
      */
     public WalletKit restoreWalletFromSeed(DeterministicSeed seed) {
         this.restoreFromSeed = seed;
@@ -193,10 +197,9 @@ public class WalletKit extends AbstractIdleService {
     }
 
     /**
-     * <p>Override this to return wallet extensions if any are necessary.</p>
-     *
-     * <p>When this is called, chain(), store(), and peerGroup() will return the created objects, however they are not
-     * initialized/started.</p>
+     * When this is called, chain(), store(), and peerGroup() will return the created objects, 
+     * however they are not initialized. 
+     * Be careful using this, it is included at the recommendation of bitcoinj community.
      */
     protected List<WalletExtension> provideWalletExtensions() throws Exception {
         return ImmutableList.of();
@@ -206,9 +209,18 @@ public class WalletKit extends AbstractIdleService {
      * This method is invoked on a background thread after all objects are initialised, but before the peer group
      * or block chain download is started. You can tweak the objects configuration here.
      */
-    protected void onSetupCompleted() { }
+    protected void onSetupCompleted() {
+    	// in lieu of a logger...
+    	System.out.println("Setup has been completed");
+    	
+    	//if we choose to store logs on user devices...
+    	log.info("Setup has been completed");
+    }
 
     /**
+     * From bitcoinj's AppKit. Inteded to run on localhost for now. Eventually new files will be placed on the device
+     * or system of user while the app is running. 
+     * 
      * Tests to see if the spvchain file has an operating system file lock on it. Useful for checking if your app
      * is already running. If another copy of your app is running and you start the appkit anyway, an exception will
      * be thrown during the startup process. Returns false if the chain file does not exist.
@@ -231,6 +243,12 @@ public class WalletKit extends AbstractIdleService {
         }
     }
 
+    
+    /**
+     * The Startup method itself.
+     * 
+     * 1) New thread to make all the directories we will need, basically an ensureCreated
+     */
     @Override
     protected void startUp() throws Exception {
         // Runs in a separate thread.
@@ -244,10 +262,12 @@ public class WalletKit extends AbstractIdleService {
             File chainFile = new File(directory, filePrefix + ".spvchain");
             boolean chainFileExists = chainFile.exists();
             vWalletFile = new File(directory, filePrefix + ".wallet");
+            // New wallet or set up an existing one from a seed?
             boolean shouldReplayWallet = (vWalletFile.exists() && !chainFileExists) || restoreFromSeed != null;
             vWallet = createOrLoadWallet(shouldReplayWallet);
 
-            // Initiate Bitcoin network objects (block store, blockchain and peer group)
+            // Initiate Bitcoin network objects (block store, blockchain and peer group).
+            // Part of a bitcoinj method.
             vStore = new SPVBlockStore(params, chainFile);
             if ((!chainFileExists || restoreFromSeed != null) && checkpoints != null) {
                 // Initialize the chain file with a checkpoint to speed up first-run sync.
@@ -283,7 +303,8 @@ public class WalletKit extends AbstractIdleService {
             vChain.addWallet(vWallet);
             vPeerGroup.addWallet(vWallet);
             onSetupCompleted();
-
+            
+            // bitcoinj's recommended method for retrieving and playing the correct blockchain.
             if (blockingStartup) {
                 vPeerGroup.startAsync();
                 vPeerGroup.awaitRunning();
@@ -406,16 +427,13 @@ public class WalletKit extends AbstractIdleService {
     }
 
 
+
     protected PeerGroup createPeerGroup() throws TimeoutException {
-        if (useTor) {
-            TorClient torClient = new TorClient();
-            torClient.getConfig().setDataDirectory(directory);
-            return PeerGroup.newWithTor(params, vChain, torClient);
-        }
-        else
-            return new PeerGroup(params, vChain);
+        //Eventually we could create a TOR peergroup here if we wanted
+        return new PeerGroup(params, vChain);
     }
 
+    /** bitcoinj's own shutdown hook for the app threads. */
     private void installShutdownHook() {
         if (autoStop) Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override public void run() {
