@@ -1,4 +1,4 @@
-package test.tools.sms;
+package tools.sms;
 
 import static org.junit.Assert.*;
 

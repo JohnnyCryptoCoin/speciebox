@@ -1,4 +1,4 @@
-import static org.junit.Assert.assertTrue;
+package demo;
 
 import java.util.Scanner;
 

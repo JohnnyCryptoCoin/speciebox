@@ -1,4 +1,4 @@
-package test.tools.cryptography;
+package tools.crypto;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;

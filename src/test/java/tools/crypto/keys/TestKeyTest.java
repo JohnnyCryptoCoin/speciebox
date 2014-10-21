@@ -1,4 +1,4 @@
-package test.tools.keys;
+package tools.crypto.keys;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

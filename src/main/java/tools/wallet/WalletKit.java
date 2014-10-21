@@ -21,7 +21,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Service;
-import com.subgraph.orchid.TorClient;
+
+import org.apache.commons.lang.NullArgumentException;
 import org.bitcoinj.core.*;
 import org.bitcoinj.net.discovery.DnsDiscovery;
 import org.bitcoinj.protocols.channels.StoredPaymentChannelClientStates;
@@ -56,7 +57,8 @@ import static com.google.common.base.Preconditions.checkState;
  * 
  * This WalletKit will continue to be extended once we have a server environment, as opposed to only demos on localhost.
  * These files being stored will need design and security decisions made once the impact of their unintended release is
- * better understood. Let's not shoot ourselves in the foot from the getgo here.
+ * better understood. Let's not shoot ourselves in the foot from the getgo here. This SPV style of doing things is 
+ * intended to provide a thin client application.
  * 
  * FROM bitcoingj's AbstractIdleService Docs:
  * 
@@ -93,13 +95,16 @@ public class WalletKit extends AbstractIdleService {
     @Nullable protected DeterministicSeed restoreFromSeed;
 
     public WalletKit(NetworkParameters params, File directory, String filePrefix) {
-        this.params = checkNotNull(params);
-        this.directory = checkNotNull(directory);
-        this.filePrefix = checkNotNull(filePrefix);
-        if (!Utils.isAndroidRuntime()) {
-            InputStream stream = WalletKit.class.getResourceAsStream("/" + params.getId() + ".checkpoints");
-            if (stream != null)
-                setCheckpoints(stream);
+    	if (params.equals(null) || directory.equals(null) || filePrefix.equals(null)){
+    		throw new NullArgumentException("NO ARGUMENTS CAN BE NULL");
+    	}
+        this.params = params;
+        this.directory = directory;
+        this.filePrefix = filePrefix;
+        //TODO: We can check for what runtime environment we are in for customization
+        InputStream stream = WalletKit.class.getResourceAsStream("/" + params.getId() + ".checkpoints");
+        if (stream != null){
+            setCheckpoints(stream);
         }
     }
 
@@ -148,8 +153,9 @@ public class WalletKit extends AbstractIdleService {
      * block sync faster for new users - refer to the documentation on the bitcoinj website for further details.
      */
     public WalletKit setCheckpoints(InputStream checkpoints) {
-        if (this.checkpoints != null)
+        if (this.checkpoints != null){
             Utils.closeUnchecked(this.checkpoints);
+        }
         this.checkpoints = checkNotNull(checkpoints);
         return this;
     }
