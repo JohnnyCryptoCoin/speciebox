@@ -34,7 +34,7 @@ public class WalletController {
         };
         // Now configure and start the appkit. This will take a second or two
         if (params == RegTestParams.get()) {
-            bitcoin.connectToLocalHost();   // You should run a regtest mode bitcoind locally.
+            bitcoin.connectToLocalHost();   
         } else if (params == MainNetParams.get()) {
             // Checkpoints are block headers that ship inside our app: for a new user, we pick the last header
             // in the checkpoints file and then download the rest from the network. It makes things much faster.

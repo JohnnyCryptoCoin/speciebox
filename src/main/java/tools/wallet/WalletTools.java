@@ -10,6 +10,7 @@ import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.store.BlockStoreException;
 import org.bitcoinj.store.MemoryBlockStore;
+import org.bitcoinj.store.SPVBlockStore;
 import org.bitcoinj.testing.KeyChainTransactionSigner;
 import org.bitcoinj.testing.TestWithWallet;
 import org.bitcoinj.wallet.DeterministicKeyChain;
@@ -18,6 +19,9 @@ import org.bitcoinj.wallet.MarriedKeyChain;
 import com.google.common.collect.Lists;
 
 public class WalletTools extends TestWithWallet{
+	
+	//TestWithWalled only has basic blockstore. We need spv to work with tests
+	protected SPVBlockStore spvblockstore;
 	
 	private void createMultiSigWallet(int threshold, int numKeys) throws BlockStoreException {
         createMultiSigWallet(threshold, numKeys, true);
