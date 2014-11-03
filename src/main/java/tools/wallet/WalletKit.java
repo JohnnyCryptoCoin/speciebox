@@ -30,6 +30,7 @@ import org.bitcoinj.protocols.channels.StoredPaymentChannelServerStates;
 import org.bitcoinj.store.BlockStoreException;
 import org.bitcoinj.store.SPVBlockStore;
 import org.bitcoinj.store.WalletProtobufSerializer;
+import org.bitcoinj.utils.BriefLogFormatter;
 import org.bitcoinj.wallet.DeterministicSeed;
 import org.bitcoinj.wallet.KeyChainGroup;
 import org.bitcoinj.wallet.Protos;
@@ -263,6 +264,7 @@ public class WalletKit extends AbstractIdleService {
                 throw new IOException("Could not create directory " + directory.getAbsolutePath());
             }
         }
+        System.out.println("Starting up with directory = " + directory);
         log.info("Starting up with directory = {}", directory);
         try {
             File chainFile = new File(directory, filePrefix + ".spvchain");
@@ -281,6 +283,7 @@ public class WalletKit extends AbstractIdleService {
                 if (restoreFromSeed != null) {
                     time = restoreFromSeed.getCreationTimeSeconds();
                     if (chainFileExists) {
+                    	System.out.println("Deleting the chain file in preparation from restore.");
                         log.info("Deleting the chain file in preparation from restore.");
                         vStore.close();
                         if (!chainFile.delete())
@@ -299,6 +302,7 @@ public class WalletKit extends AbstractIdleService {
 
             // Set up peer addresses or discovery first, so if wallet extensions try to broadcast a transaction
             // before we're actually connected the broadcast waits for an appropriate number of connections.
+            System.out.println("Setting Peer Addresses");
             if (peerAddresses != null) {
                 for (PeerAddress addr : peerAddresses) vPeerGroup.addAddress(addr);
                 vPeerGroup.setMaxConnections(peerAddresses.length);
@@ -311,6 +315,7 @@ public class WalletKit extends AbstractIdleService {
             onSetupCompleted();
             
             // bitcoinj's recommended method for retrieving and playing the correct blockchain.
+            System.out.println("Sarting to play blockchain");
             if (blockingStartup) {
                 vPeerGroup.startAsync();
                 vPeerGroup.awaitRunning();
@@ -387,6 +392,7 @@ public class WalletKit extends AbstractIdleService {
     }
 
     protected Wallet createWallet() {
+    	System.out.println("creating new wallet");
         KeyChainGroup kcg;
         if (restoreFromSeed != null)
             kcg = new KeyChainGroup(params, restoreFromSeed);

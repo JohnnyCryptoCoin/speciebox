@@ -1,52 +1,135 @@
 package tools.wallet;
 
-import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.kits.WalletAppKit;
-import org.bitcoinj.params.MainNetParams;
-import org.bitcoinj.params.RegTestParams;
-import org.bitcoinj.params.TestNet3Params;
-import org.bitcoinj.utils.BriefLogFormatter;
-import org.bitcoinj.utils.Threading;
-import org.bitcoinj.wallet.DeterministicSeed;
+import java.io.File;
+import java.util.List;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
+
+import org.bitcoinj.core.AbstractWalletEventListener;
+import org.bitcoinj.core.Address;
+import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.ECKey;
+import org.bitcoinj.core.InsufficientMoneyException;
+import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.core.Transaction;
+import org.bitcoinj.core.TransactionConfidence;
+import org.bitcoinj.core.Wallet;
+import org.bitcoinj.core.WalletEventListener;
+import org.bitcoinj.crypto.DeterministicKey;
+import org.bitcoinj.kits.WalletAppKit;
+import org.bitcoinj.params.RegTestParams;
+import org.bitcoinj.params.TestNet3Params;
+import org.bitcoinj.script.Script;
+import org.bitcoinj.wallet.DeterministicSeed;
+
+import com.google.common.collect.Lists;
 
 public class WalletController {
 	
-	public static String APP_NAME = "SpecieWallet";
-	public static NetworkParameters params = TestNet3Params.get();
-    public static WalletAppKit bitcoin;
-
-	public void setupWalletKit(@Nullable DeterministicSeed seed) {
-        // If seed is non-null it means we are restoring from backup.
-        bitcoin = new WalletAppKit(params, new File("."), APP_NAME) {
-            @Override
-            protected void onSetupCompleted() {
-                // Don't make the user wait for confirmations for now, as the intention is they're sending it their own money! for now
-                bitcoin.wallet().allowSpendingUnconfirmedTransactions();
-                if (params != RegTestParams.get())
-                    bitcoin.peerGroup().setMaxConnections(11);
-                bitcoin.peerGroup().setBloomFilterFalsePositiveRate(0.00001);
-            }
-        };
-        // Now configure and start the appkit. This will take a second or two
-        if (params == RegTestParams.get()) {
-            bitcoin.connectToLocalHost();   
-        } else if (params == MainNetParams.get()) {
-            // Checkpoints are block headers that ship inside our app: for a new user, we pick the last header
-            // in the checkpoints file and then download the rest from the network. It makes things much faster.
-            // Checkpoint files are made using the BuildCheckpoints tool and usually we have to download the
-            // last months worth or more (takes a few seconds).
-            bitcoin.setCheckpoints(getClass().getResourceAsStream("checkpoints"));
-        } else if (params == TestNet3Params.get()) {
-            bitcoin.setCheckpoints(getClass().getResourceAsStream("org.bitcoin.test.checkpoints"));
-            // As an example!
-            bitcoin.useTor();
-        }
-        if (seed != null)
-            bitcoin.restoreWalletFromSeed(seed);
+	protected static String APP_NAME = "SpecieWallet";
+	protected String filePrefix;
+	protected NetworkParameters params;
+	protected static WalletAppKit bitcoin;
+    
+    public WalletController(NetworkParameters params){
+    	this.params = params;
+    	// Determine what network params we are going to handle
+		if (params.equals(TestNet3Params.get())) {
+		    this.filePrefix = "forwarding-service-testnet";
+		} else if (params.equals(RegTestParams.get())) {
+			this.filePrefix = "forwarding-service-regtest";
+		} else {
+			this.filePrefix = "forwarding-service";
+		}
     }
+
+	public void setupWalletKit(@Nullable DeterministicSeed seed, String fileExtention) {
+		
+        // If seed is non-null it means we are restoring from backup.
+		bitcoin = new WalletAppKit(params, new File(fileExtention), filePrefix);
+        if (seed != null) {
+            bitcoin.restoreWalletFromSeed(seed);
+        }
+        
+        // Download the block chain and wait until it's done.
+        bitcoin.startAsync();
+        bitcoin.awaitRunning();
+        
+        WalletListener wListener = new WalletListener();
+        bitcoin.wallet().addEventListener(wListener);
+    }
+	
+	public void shutdown(){
+		bitcoin.stopAsync();
+		bitcoin.awaitTerminated();
+		System.out.println("Shutdown complete");
+	}
+	
+	public void marryWallets(Wallet spouse){
+		DeterministicKey spouseKey = spouse.getWatchingKey();
+		// threshold of 2 keys,
+		//bitcoin.wallet().addFollowingAccountKeys(Lists.newArrayList(spouseKey), 2);
+	}
+	
+	public void addListener(WalletEventListener listener){
+		bitcoin.wallet().addEventListener(listener);
+	}
+	
+	public Address getFreshRecieveAddress(){
+		return bitcoin.wallet().freshReceiveAddress();
+	}
+	
+	
+	public void sendCoins (Address toAddress, Coin value){
+		
+		try {
+            Wallet.SendResult result = bitcoin.wallet().sendCoins(bitcoin.peerGroup(), toAddress, value);
+            System.out.println("coins sent. transaction hash: " + result.tx.getHashAsString());
+            // you can use a block explorer like https://www.biteasy.com/ to inspect the transaction with the printed transaction hash. 
+        } catch (InsufficientMoneyException e) {
+            System.out.println("Not enough coins in your wallet. Missing " + e.missing.getValue() + " satoshis are missing (including fees)");
+            System.out.println("Send money to: " + bitcoin.wallet().currentReceiveAddress().toString());
+        }
+	}
+}
+
+//A helper class from bitcoinj. Stubbed methods for the most part
+//The Wallet event listener its implementations get called on wallet changes.
+class WalletListener extends AbstractWalletEventListener {
+
+@Override
+public void onCoinsReceived(Wallet wallet, Transaction tx, Coin prevBalance, Coin newBalance) {
+    System.out.println("-----> coins resceived: " + tx.getHashAsString());
+    System.out.println("received: " + tx.getValue(wallet));
+}
+
+@Override
+public void onTransactionConfidenceChanged(Wallet wallet, Transaction tx) {
+    System.out.println("-----> confidence changed: " + tx.getHashAsString());
+    TransactionConfidence confidence = tx.getConfidence();
+    System.out.println("new block depth: " + confidence.getDepthInBlocks());
+}
+
+@Override
+public void onCoinsSent(Wallet wallet, Transaction tx, Coin prevBalance, Coin newBalance) {
+    System.out.println("coins sent");
+}
+
+@Override
+public void onReorganize(Wallet wallet) {
+}
+
+@Override
+public void onWalletChanged(Wallet wallet) {
+}
+
+@Override
+public void onKeysAdded(List<ECKey> keys) {
+    System.out.println("new key added");
+}
+
+@Override
+public void onScriptsAdded(Wallet wallet, List<Script> scripts) {
+    System.out.println("new script added");
+}
 }
