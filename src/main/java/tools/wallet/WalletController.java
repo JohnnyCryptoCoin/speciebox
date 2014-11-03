@@ -79,6 +79,9 @@ public class WalletController {
 		return bitcoin.wallet().freshReceiveAddress();
 	}
 	
+	public Wallet getWallet(){
+		return bitcoin.wallet();
+	}
 	
 	public void sendCoins (Address toAddress, Coin value){
 		
