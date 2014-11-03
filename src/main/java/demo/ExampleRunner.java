@@ -1,5 +1,6 @@
 package demo;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -30,6 +31,7 @@ public class ExampleRunner {
 //	private static TestKey key = new TestKey(UUID.getBytes());
 //	private static User user = new User(UUID);
 	private static String testDirectory = "testFiles/";
+	private static WalletController controller = new WalletController(TestNet3Params.get());
 	
 	public static void main(String[] args) {
 //		boolean loggedIn = login();
@@ -40,6 +42,10 @@ public class ExampleRunner {
 			cmd = in.nextLine();
 			if(cmd.equals("load")){
 				loadDemoWallet();
+			} else if (cmd.equals("save")) {
+				System.out.println("enter filename: ");
+		        String token = in.nextLine();
+				save(token);
 			} else if (cmd.equals("smslogin")) {
 				login();
 			} else {
@@ -47,6 +53,16 @@ public class ExampleRunner {
 			}
 		}
         
+	}
+
+	private static void save(String walletFile) {
+		File wallet = new File("demoWallet/" + walletFile);
+		try {
+			controller.saveWallet(wallet);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private static void loadDemoWallet() {
@@ -57,7 +73,7 @@ public class ExampleRunner {
 	        Long creationtime = System.currentTimeMillis();
 
 	        DeterministicSeed seed = new DeterministicSeed(seedCode, null, passphrase, creationtime);
-			WalletController controller = new WalletController(TestNet3Params.get());
+			//Loading wallet from seed
 			controller.setupWalletKit(seed, "demoWallet/");
 			
 			Wallet wallet = controller.getWallet();

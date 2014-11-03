@@ -1,6 +1,7 @@
 package tools.wallet;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -20,6 +21,7 @@ import org.bitcoinj.kits.WalletAppKit;
 import org.bitcoinj.params.RegTestParams;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.script.Script;
+import org.bitcoinj.store.UnreadableWalletException;
 import org.bitcoinj.wallet.DeterministicSeed;
 
 import com.google.common.collect.Lists;
@@ -35,11 +37,11 @@ public class WalletController {
     	this.params = params;
     	// Determine what network params we are going to handle
 		if (params.equals(TestNet3Params.get())) {
-		    this.filePrefix = "forwarding-service-testnet";
+		    this.filePrefix = "speciebox-testnet";
 		} else if (params.equals(RegTestParams.get())) {
-			this.filePrefix = "forwarding-service-regtest";
+			this.filePrefix = "speciebox-regtest";
 		} else {
-			this.filePrefix = "forwarding-service";
+			this.filePrefix = "speciebox";
 		}
     }
 
@@ -65,6 +67,10 @@ public class WalletController {
 		System.out.println("Shutdown complete");
 	}
 	
+	public void saveWallet(File walletFile) throws IOException{
+		bitcoin.wallet().saveToFile(walletFile);
+	}
+		
 	public void marryWallets(Wallet spouse){
 		DeterministicKey spouseKey = spouse.getWatchingKey();
 		// threshold of 2 keys,

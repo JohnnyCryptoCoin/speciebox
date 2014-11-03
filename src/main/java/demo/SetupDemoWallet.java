@@ -35,9 +35,9 @@ public class SetupDemoWallet {
         //System.out.println("Hit enter when you have sent testCoins from a faucet");
         //String token = in.nextLine();
 		
-		System.out.println("Enter password to encrypt demoWallet: ");
-        String password = in.nextLine();
-		wallet.encrypt(password);
+//		System.out.println("Enter password to encrypt demoWallet: ");
+//      String password = in.nextLine();
+//		wallet.encrypt(password);
         
         List<String> mcode = getMCode(wallet);
         saveMCode(mcode);
