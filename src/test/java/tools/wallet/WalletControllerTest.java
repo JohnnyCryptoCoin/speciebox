@@ -50,13 +50,23 @@ public class WalletControllerTest {
 	}
 	
 	@Test
-	public void testSaveWalletShouldSaveWalletToDiskAndReloadIt() throws IOException, UnreadableWalletException {
+	public void testLoadWalletFromFileUnencrypted() throws IOException, UnreadableWalletException {
+		controller.setupWalletKitFromFile(testWalletDirectory, "specie-wallet-testnet");
+		
+        assertNotNull(controller.getFreshRecieveAddress());
+        System.out.println(controller.toString());
+        
+        controller.shutdown();
+	}
+	
+	//@Test
+	public void testSaveWalletSeedShouldSaveWalletToDiskAndReloadItFromMSeed() throws IOException, UnreadableWalletException {
 		controller.setupWalletKit(null, testDirectory);
 		
         assertNotNull(controller.getFreshRecieveAddress());
         //then save a new wallet file. this one is unencrypted!
         System.out.println("Saving Wallet");
-        String seedcode = controller.saveWallet(testWalletDirectory+"testWallet1.sbox");
+        String seedcode = controller.saveWalletSeed(testWalletDirectory+"testWallet1.sbox");
         assertNotNull(seedcode);
         System.out.println(seedcode);
         

@@ -34,6 +34,9 @@ public class SetupDemoWallet {
 		
 		System.out.println(wallet.toString());
 		
+		System.out.println("---------------------------------------------------");
+		System.out.println("Send coins to: " + controller.getFreshRecieveAddress());
+		
         System.out.println("Hit enter when you have sent testCoins from a faucet");
         String token = in.nextLine();
 		
@@ -41,14 +44,13 @@ public class SetupDemoWallet {
 //      String password = in.nextLine();
 //		wallet.encrypt(password);
         
-        List<String> mcode = getMCode(wallet);
-        saveMCode(mcode);
+        controller.saveWalletSeed("demoWallet/mnemonic_seed.sbx");
         controller.shutdown();
 	}
 	
 	private static void saveMCode(List<String> mcode) {
 		try {
-	        BufferedWriter out = new BufferedWriter(new FileWriter("demoWallet/mnemonic_seed.msc"));
+	        BufferedWriter out = new BufferedWriter(new FileWriter("demoWallet/mnemonic_seed"+System.currentTimeMillis()+".msc"));
             for (String word: mcode) {
                 out.write(word);
                 out.newLine();

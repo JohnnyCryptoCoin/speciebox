@@ -67,13 +67,35 @@ public class WalletController {
         SPECIEBOX.wallet().addEventListener(wListener);
     }
 	
+	public void setupWalletKitFromFile(String fileExtention, String fileName) {
+		// Send in the filename and file extention. Might trigger exceptions if wallet is already running
+		SPECIEBOX = new WalletAppKit(params, new File(fileExtention), fileName);
+        // Download the block chain and wait until it's done.
+        SPECIEBOX.startAsync();
+        SPECIEBOX.awaitRunning();
+        
+        WalletListener wListener = new WalletListener();
+        SPECIEBOX.wallet().addEventListener(wListener);
+    }
+	
 	public void shutdown(){
 		SPECIEBOX.stopAsync();
 		SPECIEBOX.awaitTerminated();
-		System.out.println("Shutdown complete");
 	}
 	
-	public String saveWallet(String filepath) throws IOException{
+	public boolean saveWallet(String filepath){
+		File walletFile = new File(filepath);
+		try {
+			SPECIEBOX.wallet().saveToFile(walletFile);
+			return true;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public String saveWalletSeed(String filepath){
 		try {
 			DeterministicSeed seed = SPECIEBOX.wallet().getKeyChainSeed();
 			String mcode =Joiner.on(" ").join(seed.getMnemonicCode());
@@ -101,6 +123,8 @@ public class WalletController {
 		return SPECIEBOX.wallet().freshReceiveAddress();
 	}
 	
+	//for testing only, we will eventually hide this away forever 
+	//when we want to know exactly what to expose
 	public Wallet getWallet(){
 		return SPECIEBOX.wallet();
 	}
@@ -157,6 +181,7 @@ public void onReorganize(Wallet wallet) {
 
 @Override
 public void onWalletChanged(Wallet wallet) {
+	System.out.println("wallet changed");
 }
 
 @Override

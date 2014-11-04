@@ -38,7 +38,7 @@ public class ExampleRunner {
 		String cmd = "cmd";
 		while (!cmd.isEmpty()){
 			Scanner in = new Scanner(System.in);
-			System.out.println("enter command [load/smslogin/quit]");
+			System.out.println("enter command [load/save/smslogin/print/quit]");
 			cmd = in.nextLine();
 			if(cmd.equals("load")){
 				loadDemoWallet();
@@ -48,25 +48,23 @@ public class ExampleRunner {
 				save(token);
 			} else if (cmd.equals("smslogin")) {
 				login();
+			} else if (cmd.equals("print")) {
+				System.out.println(controller.toString());
 			} else {
 				cmd = "";
 			}
 		}
         
+		controller.shutdown();
 	}
 
 	private static void save(String walletFile) {
-		try {
-			controller.saveWallet("demoWallet/" + walletFile);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			controller.saveWalletSeed("demoWallet/" + walletFile);
 	}
 
 	private static void loadDemoWallet() {
 		try {
-			String seedCode = readFile("demoWallet/mnemonic_seed.msc");
+			String seedCode = readFile("demoWallet/mnemonic_seed.sbx");
 			System.out.println(seedCode);
 			String passphrase = "";
 	        Long creationtime = System.currentTimeMillis();
@@ -76,6 +74,7 @@ public class ExampleRunner {
 			controller.setupWalletKit(seed, "demoWallet/");
 			
 			Wallet wallet = controller.getWallet();
+			wallet.allowSpendingUnconfirmedTransactions();
 			System.out.println(wallet.toString());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
