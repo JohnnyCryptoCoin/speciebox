@@ -47,6 +47,15 @@ public class WalletControllerTest {
 	
 	@After
 	public void teardown(){
+//		for when we have fake coins in our tests
+//		try {
+//			Coin mycoins = controller.getBalance();
+//			Address toAddress = new Address(params, "msj42CCGruhRsFrGATiUuh25dtxYtnpbTx");
+//			controller.sendCoins(toAddress, mycoins, false);
+//		} catch (AddressFormatException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		cleanup();
 	}
 	
@@ -54,7 +63,7 @@ public class WalletControllerTest {
 	public void testLoadWalletFromFileUnencrypted() throws IOException, UnreadableWalletException {
 		controller.setupWalletKit(null, testWalletDirectory, "specie-wallet-testnet");
 		
-        assertNotNull(controller.getFreshRecieveAddress());
+        assertNotNull(controller.getRecieveAddress(true));
         System.out.println(controller.toString());
         
         controller.shutdown();
@@ -76,7 +85,7 @@ public class WalletControllerTest {
 	public void testSaveWalletSeedShouldSaveWalletToDiskAndReloadItFromMSeed() throws IOException, UnreadableWalletException {
 		controller.setupWalletKit(null, testDirectory);
 		
-        assertNotNull(controller.getFreshRecieveAddress());
+        assertNotNull(controller.getRecieveAddress(false));
         //then save a new wallet file. this one is unencrypted!
         System.out.println("Saving Wallet");
         String seedcode = controller.saveWalletSeed(testWalletDirectory+"testWallet1.sbox");
@@ -103,12 +112,14 @@ public class WalletControllerTest {
 	public void testSendFakeCoins() throws AddressFormatException {
 		controller.setupWalletKit(null, testDirectory);
 		
-		// To test everything we create and print a fresh receiving address. Send some coins to that address and see if everything works.
-        Address address = new Address(params, "mupBAFeT63hXfeeT4rnAUcpKHDkz1n4fdw");
+		// To test everything we create and print a fresh receiving address. 
+		// Send some coins to "TP's TestNet Faucet" return wallet.
+		// http://tpfaucet.appspot.com/
+        Address address = new Address(params, "msj42CCGruhRsFrGATiUuh25dtxYtnpbTx");
         
         //new coin for test
         Coin coin = Coin.parseCoin("0.009");
-        controller.sendCoins(address, coin);
+        controller.sendCoins(address, coin, false);
         controller.shutdown();
         cleanup();
 	}

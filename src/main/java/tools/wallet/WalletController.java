@@ -19,6 +19,7 @@ import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionConfidence;
 import org.bitcoinj.core.Wallet;
+import org.bitcoinj.core.Wallet.BalanceType;
 import org.bitcoinj.core.WalletEventListener;
 import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.crypto.KeyCrypter;
@@ -33,6 +34,9 @@ import org.spongycastle.crypto.params.KeyParameter;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 
 public class WalletController {
 	
@@ -64,6 +68,7 @@ public class WalletController {
 		if (seed != null) {
 			SPECIEBOX.restoreWalletFromSeed(seed);
 		}
+		SPECIEBOX.setAutoSave(true);
         // Download the block chain and wait until it's done.
         SPECIEBOX.startAsync();
         SPECIEBOX.awaitRunning();
@@ -78,6 +83,7 @@ public class WalletController {
 		if (seed != null) {
 			SPECIEBOX.restoreWalletFromSeed(seed);
 		}
+		SPECIEBOX.setAutoSave(true);
         // Download the block chain and wait until it's done.
         SPECIEBOX.startAsync();
         SPECIEBOX.awaitRunning();
@@ -139,7 +145,7 @@ public class WalletController {
 		SPECIEBOX.wallet().addEventListener(listener);
 	}
 	
-	public Address getFreshRecieveAddress(){
+	public Address getRecieveAddress(boolean isFreshAddress){
 		return SPECIEBOX.wallet().freshReceiveAddress();
 	}
 	
@@ -155,21 +161,44 @@ public class WalletController {
 		return sdf.format(cal.getTime());
 	}
 	
-	public void sendCoins (Address toAddress, Coin value){
-		
+	public void sendCoins (Address toAddress, Coin value, boolean isRetry){
 		try {
             Wallet.SendResult result = SPECIEBOX.wallet().sendCoins(SPECIEBOX.peerGroup(), toAddress, value);
-            System.out.println("coins sent. transaction hash: " + result.tx.getHashAsString());
-            // you can use a block explorer like https://www.biteasy.com/ to inspect the transaction with the printed transaction hash. 
+            System.out.println("Coins sent. Transaction hash: " + result.tx.getHashAsString());
         } catch (InsufficientMoneyException e) {
-            System.out.println("Not enough coins in your wallet. Missing " + e.missing.getValue() + " satoshis are missing (including fees)");
-            System.out.println("Send money to: " + SPECIEBOX.wallet().currentReceiveAddress().toString());
+            System.out.println("Not enough coins in your wallet, " + e.missing.getValue() + " satoshis are missing (including fees)");
+            listenForCoinsAndRetry(value, toAddress);
         }
+	}
+	
+	private void listenForCoinsAndRetry(final Coin value, final Address toAddress){
+        // Wait until the we have enough balance and display a notice.
+        ListenableFuture<Coin> balanceFuture = SPECIEBOX.wallet().getBalanceFuture(value, BalanceType.AVAILABLE);
+        FutureCallback<Coin> retry = new FutureCallback<Coin>() {
+            public void onSuccess(Coin balance) {
+                System.out.println("coins arrived and the wallet now has enough balance");
+                try {
+					Wallet.SendResult result = SPECIEBOX.wallet().sendCoins(SPECIEBOX.peerGroup(), toAddress, value);
+					System.out.println("Info: COINS RESENT. Transaction hash: " + result.tx.getHashAsString());
+				} catch (InsufficientMoneyException e) {
+					e.printStackTrace();
+					System.out.println("Still not enough coins in your wallet, missing " + e.missing.getValue() + " satoshis.");
+				}
+            }
+            public void onFailure(Throwable t) {
+                System.out.println("something went wrong");
+            }
+        };
+        Futures.addCallback(balanceFuture, retry);
 	}
 	
 	@Override
 	public String toString(){
 		return SPECIEBOX.wallet().toString();
+	}
+
+	public Coin getBalance() {
+		return SPECIEBOX.wallet().getBalance();
 	}
 }
 
@@ -202,6 +231,8 @@ public void onReorganize(Wallet wallet) {
 @Override
 public void onWalletChanged(Wallet wallet) {
 	System.out.println("wallet changed");
+	System.out.println("last seen block at: " + wallet.getLastBlockSeenTime());
+	System.out.println("balance: "+ wallet.getBalance());
 }
 
 @Override

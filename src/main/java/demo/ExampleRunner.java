@@ -2,6 +2,7 @@ package demo;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.channels.ShutdownChannelGroupException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -12,6 +13,7 @@ import java.util.Scanner;
 
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.AddressFormatException;
+import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.store.UnreadableWalletException;
@@ -41,11 +43,27 @@ public class ExampleRunner {
 			System.out.println("enter command [load/save/smslogin/print/quit]");
 			cmd = in.nextLine();
 			if(cmd.equals("load")){
-				loadDemoWallet();
+				controller.setupWalletKit(null, "demoWallet/", in.nextLine());
+				System.out.println("enter filename: ");
+				loadDemoWallet(in.nextLine());
+			} else if(cmd.equals("seed")){
+				loadDemoWallet(in.nextLine());
+			} else if(cmd.equals("spend")){
+				try {
+					System.out.println("enter address to send to: ");
+					String stringAddr = in.nextLine();
+					Address toAddress;
+					toAddress = new Address(TestNet3Params.get(), stringAddr);
+					System.out.println("enter value [0.000001,"+(controller.getBalance().getValue()/100000000)+"}: ");
+					String stringVal = in.nextLine();
+					Coin value = Coin.parseCoin(stringVal);
+					controller.sendCoins(toAddress, value, false);
+				} catch (AddressFormatException e) {
+					e.printStackTrace();
+				}
 			} else if (cmd.equals("save")) {
 				System.out.println("enter filename: ");
-		        String token = in.nextLine();
-				save(token);
+				save(in.nextLine());
 			} else if (cmd.equals("smslogin")) {
 				login();
 			} else if (cmd.equals("print")) {
@@ -56,13 +74,14 @@ public class ExampleRunner {
 		}
         
 		controller.shutdown();
+		System.out.println("shutdown complete");
 	}
 
 	private static void save(String walletFile) {
 			controller.saveWalletSeed("demoWallet/" + walletFile);
 	}
 
-	private static void loadDemoWallet() {
+	private static void loadDemoWallet(String walletName) {
 		try {
 			String seedCode = readFile("demoWallet/mnemonic_seed.sbx");
 			System.out.println(seedCode);
