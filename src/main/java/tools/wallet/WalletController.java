@@ -1,7 +1,11 @@
 package tools.wallet;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -24,53 +28,65 @@ import org.bitcoinj.script.Script;
 import org.bitcoinj.store.UnreadableWalletException;
 import org.bitcoinj.wallet.DeterministicSeed;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 public class WalletController {
 	
-	protected static String APP_NAME = "SpecieWallet";
-	protected String filePrefix;
-	protected NetworkParameters params;
-	protected static WalletAppKit bitcoin;
+	private static String APP_NAME = "specie-wallet";
+	protected static WalletAppKit SPECIEBOX;
+	private static final String DATE_FORMAT_NOW = "yyyyMMdd_HHmmss.SSS";
+	private String filePrefix;
+	private NetworkParameters params;
     
     public WalletController(NetworkParameters params){
     	this.params = params;
+    	
     	// Determine what network params we are going to handle
+    	String timestamp = now();
 		if (params.equals(TestNet3Params.get())) {
-		    this.filePrefix = "speciebox-testnet";
+		    this.filePrefix = APP_NAME + "-testnet_" + timestamp;
 		} else if (params.equals(RegTestParams.get())) {
-			this.filePrefix = "speciebox-regtest";
+			this.filePrefix = APP_NAME + "-regtest_" + timestamp;
 		} else {
-			this.filePrefix = "speciebox";
+			this.filePrefix = APP_NAME + "_" + timestamp;
 		}
     }
 
 	public void setupWalletKit(@Nullable DeterministicSeed seed, String fileExtention) {
-		
-        // If seed is non-null it means we are restoring from backup.
-		bitcoin = new WalletAppKit(params, new File(fileExtention), filePrefix);
-        if (seed != null) {
-            bitcoin.restoreWalletFromSeed(seed);
-        }
-        
+		// If seed is non-null it means we are restoring from backup.
+		SPECIEBOX = new WalletAppKit(params, new File(fileExtention), filePrefix);
+		if (seed != null) {
+			SPECIEBOX.restoreWalletFromSeed(seed);
+		}
         // Download the block chain and wait until it's done.
-        bitcoin.startAsync();
-        bitcoin.awaitRunning();
+        SPECIEBOX.startAsync();
+        SPECIEBOX.awaitRunning();
         
         WalletListener wListener = new WalletListener();
-        bitcoin.wallet().addEventListener(wListener);
+        SPECIEBOX.wallet().addEventListener(wListener);
     }
 	
 	public void shutdown(){
-		bitcoin.stopAsync();
-		bitcoin.awaitTerminated();
+		SPECIEBOX.stopAsync();
+		SPECIEBOX.awaitTerminated();
 		System.out.println("Shutdown complete");
 	}
 	
-	public void saveWallet(File walletFile) throws IOException{
-		bitcoin.wallet().saveToFile(walletFile);
+	public String saveWallet(String filepath) throws IOException{
+		try {
+			DeterministicSeed seed = SPECIEBOX.wallet().getKeyChainSeed();
+			String mcode =Joiner.on(" ").join(seed.getMnemonicCode());
+	        BufferedWriter out = new BufferedWriter(new FileWriter(filepath));
+            out.write(mcode);
+            out.close();
+            return mcode;
+        } catch (IOException e) {
+        	//log once we get that figured out
+        	return null;
+        }
 	}
-		
+	
 	public void marryWallets(Wallet spouse){
 		DeterministicKey spouseKey = spouse.getWatchingKey();
 		// threshold of 2 keys,
@@ -78,27 +94,38 @@ public class WalletController {
 	}
 	
 	public void addListener(WalletEventListener listener){
-		bitcoin.wallet().addEventListener(listener);
+		SPECIEBOX.wallet().addEventListener(listener);
 	}
 	
 	public Address getFreshRecieveAddress(){
-		return bitcoin.wallet().freshReceiveAddress();
+		return SPECIEBOX.wallet().freshReceiveAddress();
 	}
 	
 	public Wallet getWallet(){
-		return bitcoin.wallet();
+		return SPECIEBOX.wallet();
+	}
+	
+	public static String now() {
+		Calendar cal = Calendar.getInstance();
+		SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
+		return sdf.format(cal.getTime());
 	}
 	
 	public void sendCoins (Address toAddress, Coin value){
 		
 		try {
-            Wallet.SendResult result = bitcoin.wallet().sendCoins(bitcoin.peerGroup(), toAddress, value);
+            Wallet.SendResult result = SPECIEBOX.wallet().sendCoins(SPECIEBOX.peerGroup(), toAddress, value);
             System.out.println("coins sent. transaction hash: " + result.tx.getHashAsString());
             // you can use a block explorer like https://www.biteasy.com/ to inspect the transaction with the printed transaction hash. 
         } catch (InsufficientMoneyException e) {
             System.out.println("Not enough coins in your wallet. Missing " + e.missing.getValue() + " satoshis are missing (including fees)");
-            System.out.println("Send money to: " + bitcoin.wallet().currentReceiveAddress().toString());
+            System.out.println("Send money to: " + SPECIEBOX.wallet().currentReceiveAddress().toString());
         }
+	}
+	
+	@Override
+	public String toString(){
+		return SPECIEBOX.wallet().toString();
 	}
 }
 

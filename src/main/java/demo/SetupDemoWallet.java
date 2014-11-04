@@ -19,11 +19,13 @@ public class SetupDemoWallet {
 
 	/**
 	 * Setup a Demo wallet and then save it to disk. When doing so, go to some testnet
-	 * faucet and ask for something like 0.5 btc. 
-	 * That is all you will have to work with for about 48h
+	 * faucet and ask for something like 0.4 btc. 
+	 * That is all you will have to work with for about 48h so tests should work with
+	 * no more than 0.01 btc otherwise we will test ourselves into a corner
 	 */
 	public static void main(String[] args) {
 		Scanner in = new Scanner(System.in);
+		String classpath = "demoWallet/";
 		
 		NetworkParameters params = TestNet3Params.get();
 		WalletController controller = new WalletController(params);
@@ -32,8 +34,8 @@ public class SetupDemoWallet {
 		
 		System.out.println(wallet.toString());
 		
-        //System.out.println("Hit enter when you have sent testCoins from a faucet");
-        //String token = in.nextLine();
+        System.out.println("Hit enter when you have sent testCoins from a faucet");
+        String token = in.nextLine();
 		
 //		System.out.println("Enter password to encrypt demoWallet: ");
 //      String password = in.nextLine();
@@ -47,12 +49,14 @@ public class SetupDemoWallet {
 	private static void saveMCode(List<String> mcode) {
 		try {
 	        BufferedWriter out = new BufferedWriter(new FileWriter("demoWallet/mnemonic_seed.msc"));
-	            for (String word: mcode) {
-	                out.write(word);
-	                out.newLine();
-	            }
-	            out.close();
-	        } catch (IOException e) {}
+            for (String word: mcode) {
+                out.write(word);
+                out.newLine();
+            }
+            out.close();
+        } catch (IOException e) {
+        	//Something??
+        }
 	}
 
 	public static List<String> getMCode (Wallet wallet){

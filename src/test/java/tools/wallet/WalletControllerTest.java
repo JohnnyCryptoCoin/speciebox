@@ -3,7 +3,11 @@ package tools.wallet;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.channels.ShutdownChannelGroupException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.bitcoinj.core.AbstractWalletEventListener;
@@ -19,29 +23,56 @@ import org.bitcoinj.core.Wallet;
 import org.bitcoinj.params.RegTestParams;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.script.Script;
+import org.bitcoinj.store.UnreadableWalletException;
+import org.bitcoinj.wallet.DeterministicSeed;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.base.Joiner;
 
 public class WalletControllerTest {
 	
 	private NetworkParameters params;
 	private WalletController controller;
-	private static String testDirectory = "testFiles/";
+	private static String testDirectory = "testFiles/tmp/";
+	private static String testWalletDirectory = "testFiles/";
 
 	@Before
 	public void setUp() throws Exception {
 		params = TestNet3Params.get();
 		controller = new WalletController(params);
 	}
-
-	//@Test
-	public void testSetupWalletKitShouldSetupWalletKit() {
+	
+	@After
+	public void teardown(){
+		cleanup();
+	}
+	
+	@Test
+	public void testSaveWalletShouldSaveWalletToDiskAndReloadIt() throws IOException, UnreadableWalletException {
 		controller.setupWalletKit(null, testDirectory);
 		
-		// To test everything we create and print a fresh receiving address. Send some coins to that address and see if everything works.
         assertNotNull(controller.getFreshRecieveAddress());
+        //then save a new wallet file. this one is unencrypted!
+        System.out.println("Saving Wallet");
+        String seedcode = controller.saveWallet(testWalletDirectory+"testWallet1.sbox");
+        assertNotNull(seedcode);
+        System.out.println(seedcode);
+        
+        //Load from file 
+        String passphrase = "";
+        Long creationtime = System.currentTimeMillis();
+        
+        DeterministicSeed seed = new DeterministicSeed(seedcode, null, passphrase, creationtime);
+
+		WalletController loadedController = new WalletController(params);
+		loadedController.setupWalletKit(seed, testDirectory);
+		loadedController.getWallet().toString();
+        
+		assertEquals(controller.getWallet().getWatchingKey(), loadedController.getWallet().getWatchingKey());
         controller.shutdown();
-        cleanup();
+        loadedController.shutdown();
 	}
 	
 	//@Test

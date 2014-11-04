@@ -56,9 +56,8 @@ public class ExampleRunner {
 	}
 
 	private static void save(String walletFile) {
-		File wallet = new File("demoWallet/" + walletFile);
 		try {
-			controller.saveWallet(wallet);
+			controller.saveWallet("demoWallet/" + walletFile);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
