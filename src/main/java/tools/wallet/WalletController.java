@@ -21,12 +21,15 @@ import org.bitcoinj.core.TransactionConfidence;
 import org.bitcoinj.core.Wallet;
 import org.bitcoinj.core.WalletEventListener;
 import org.bitcoinj.crypto.DeterministicKey;
+import org.bitcoinj.crypto.KeyCrypter;
+import org.bitcoinj.crypto.KeyCrypterScrypt;
 import org.bitcoinj.kits.WalletAppKit;
 import org.bitcoinj.params.RegTestParams;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.store.UnreadableWalletException;
 import org.bitcoinj.wallet.DeterministicSeed;
+import org.spongycastle.crypto.params.KeyParameter;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -38,10 +41,12 @@ public class WalletController {
 	private static final String DATE_FORMAT_NOW = "yyyyMMdd_HHmmss.SSS";
 	private String filePrefix;
 	private NetworkParameters params;
+	
+	public boolean isEncrypted;
     
     public WalletController(NetworkParameters params){
     	this.params = params;
-    	
+    	this.isEncrypted = false;
     	// Determine what network params we are going to handle
     	String timestamp = now();
 		if (params.equals(TestNet3Params.get())) {
@@ -53,9 +58,9 @@ public class WalletController {
 		}
     }
 
-	public void setupWalletKit(@Nullable DeterministicSeed seed, String fileExtention) {
+	public void setupWalletKit(@Nullable DeterministicSeed seed, String walletDirectory) {
 		// If seed is non-null it means we are restoring from backup.
-		SPECIEBOX = new WalletAppKit(params, new File(fileExtention), filePrefix);
+		SPECIEBOX = new WalletAppKit(params, new File(walletDirectory), filePrefix);
 		if (seed != null) {
 			SPECIEBOX.restoreWalletFromSeed(seed);
 		}
@@ -67,9 +72,12 @@ public class WalletController {
         SPECIEBOX.wallet().addEventListener(wListener);
     }
 	
-	public void setupWalletKitFromFile(String fileExtention, String fileName) {
-		// Send in the filename and file extention. Might trigger exceptions if wallet is already running
-		SPECIEBOX = new WalletAppKit(params, new File(fileExtention), fileName);
+	public void setupWalletKit(@Nullable DeterministicSeed seed, String walletDirectory, String fileName) {
+		// If seed is non-null it means we are restoring from backup.
+		SPECIEBOX = new WalletAppKit(params, new File(walletDirectory), fileName);
+		if (seed != null) {
+			SPECIEBOX.restoreWalletFromSeed(seed);
+		}
         // Download the block chain and wait until it's done.
         SPECIEBOX.startAsync();
         SPECIEBOX.awaitRunning();
@@ -109,10 +117,22 @@ public class WalletController {
         }
 	}
 	
+	// Simple wrappers, yet necessary for our implementation of wallet.
+	public void encryptWallet(String pass){
+		final KeyCrypterScrypt crypter = new KeyCrypterScrypt();
+		SPECIEBOX.wallet().encrypt(crypter, crypter.deriveKey(pass));
+		isEncrypted = true;
+	}
+	
+	public void decryptWallet(String pass){
+		SPECIEBOX.wallet().decrypt(pass);
+		isEncrypted = false;
+	}
+	
 	public void marryWallets(Wallet spouse){
 		DeterministicKey spouseKey = spouse.getWatchingKey();
 		// threshold of 2 keys,
-		//bitcoin.wallet().addFollowingAccountKeys(Lists.newArrayList(spouseKey), 2);
+		// bitcoin.wallet().addFollowingAccountKeys(Lists.newArrayList(spouseKey), 2);
 	}
 	
 	public void addListener(WalletEventListener listener){
@@ -123,8 +143,8 @@ public class WalletController {
 		return SPECIEBOX.wallet().freshReceiveAddress();
 	}
 	
-	//for testing only, we will eventually hide this away forever 
-	//when we want to know exactly what to expose
+	// for testing only, we will eventually hide this away forever 
+	// when we want to know exactly what to expose
 	public Wallet getWallet(){
 		return SPECIEBOX.wallet();
 	}
@@ -153,8 +173,8 @@ public class WalletController {
 	}
 }
 
-//A helper class from bitcoinj. Stubbed methods for the most part
-//The Wallet event listener its implementations get called on wallet changes.
+// A helper class from bitcoinj. Stubbed methods for the most part
+// The Wallet event listener its implementations get called on wallet changes.
 class WalletListener extends AbstractWalletEventListener {
 
 @Override

@@ -28,6 +28,7 @@ import org.bitcoinj.wallet.DeterministicSeed;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.spongycastle.crypto.params.KeyParameter;
 
 import com.google.common.base.Joiner;
 
@@ -51,12 +52,24 @@ public class WalletControllerTest {
 	
 	@Test
 	public void testLoadWalletFromFileUnencrypted() throws IOException, UnreadableWalletException {
-		controller.setupWalletKitFromFile(testWalletDirectory, "specie-wallet-testnet");
+		controller.setupWalletKit(null, testWalletDirectory, "specie-wallet-testnet");
 		
         assertNotNull(controller.getFreshRecieveAddress());
         System.out.println(controller.toString());
         
         controller.shutdown();
+	}
+	
+	@Test
+	public void testEncryptAndDecryptWallet(){
+		controller.setupWalletKit(null, testDirectory);
+		String password = "specieBoxFinalProject";
+		controller.encryptWallet("specieBoxFinalProject");
+		assertTrue(controller.isEncrypted);
+		controller.decryptWallet(password);
+		assertFalse(controller.isEncrypted);
+		controller.shutdown();
+		cleanup();
 	}
 	
 	//@Test
@@ -83,6 +96,7 @@ public class WalletControllerTest {
 		assertEquals(controller.getWallet().getWatchingKey(), loadedController.getWallet().getWatchingKey());
         controller.shutdown();
         loadedController.shutdown();
+        cleanup();
 	}
 	
 	//@Test
