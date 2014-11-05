@@ -34,16 +34,20 @@ public class ExampleRunner {
 		String cmd = "cmd";
 		while (!cmd.isEmpty()){
 			Scanner in = new Scanner(System.in);
-			System.out.println("enter command [load/save/smslogin/print/quit]");
+			System.out.println("enter command [load/save/balance/spend/smslogin/print/quit]");
 			cmd = in.nextLine();
 			if(cmd.equals("load")){
 				System.out.println("enter filename: ");
 				controller.setupWalletKit(null, "demoWallet/", in.nextLine());
 				System.out.println("loaded wallet successfully");
-			} else if(cmd.equals("seed")){
+			} 
+			
+			else if(cmd.equals("seed")){
 				System.out.println("enter filename: ");
 				loadDemoWallet(in.nextLine());
-			} else if(cmd.equals("spend")){
+			} 
+			
+			else if(cmd.equals("spend")){
 				try {
 					System.out.println("enter address to send to: ");
 					String stringAddr = in.nextLine();
@@ -56,14 +60,26 @@ public class ExampleRunner {
 				} catch (AddressFormatException e) {
 					e.printStackTrace();
 				}
-			} else if (cmd.equals("save")) {
+			} 
+			
+			else if(cmd.equals("balance")){
+				System.out.println(controller.getBalance().toFriendlyString());
+			}
+			
+			else if (cmd.equals("save")) {
 				System.out.println("enter filename: ");
 				save(in.nextLine());
-			} else if (cmd.equals("smslogin")) {
+			} 
+			
+			else if (cmd.equals("smslogin")) {
 				login();
-			} else if (cmd.equals("print")) {
+			} 
+			
+			else if (cmd.equals("print")) {
 				System.out.println(controller.toString());
-			} else {
+			} 
+			
+			else {
 				cmd = "";
 			}
 		}
