@@ -1,29 +1,23 @@
 package demo;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.channels.ShutdownChannelGroupException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.AddressFormatException;
 import org.bitcoinj.core.Coin;
-import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.core.Wallet;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.store.UnreadableWalletException;
 import org.bitcoinj.wallet.DeterministicSeed;
-import org.bitcoinj.core.Wallet;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Utf8;
 
 import tools.wallet.WalletController;
+
+import com.google.common.base.Joiner;
 
 
 public class ExampleRunner {

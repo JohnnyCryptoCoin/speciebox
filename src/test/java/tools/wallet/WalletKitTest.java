@@ -1,23 +1,9 @@
 package tools.wallet;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
-import java.util.List;
 
-import org.bitcoinj.core.AbstractWalletEventListener;
-import org.bitcoinj.core.Coin;
-import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.core.Transaction;
-import org.bitcoinj.core.TransactionConfidence;
-import org.bitcoinj.core.Wallet;
-import org.bitcoinj.params.RegTestParams;
 import org.bitcoinj.params.TestNet3Params;
-import org.bitcoinj.params.UnitTestParams;
-import org.bitcoinj.script.Script;
-
-import org.junit.Test;
 
 public class WalletKitTest {
 	private WalletKit walletKit;

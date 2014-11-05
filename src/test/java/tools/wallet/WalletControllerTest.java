@@ -1,36 +1,23 @@
 package tools.wallet;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.ShutdownChannelGroupException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
 
-import org.bitcoinj.core.AbstractWalletEventListener;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.AddressFormatException;
 import org.bitcoinj.core.Coin;
-import org.bitcoinj.core.ECKey;
-import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.core.Transaction;
-import org.bitcoinj.core.TransactionConfidence;
-import org.bitcoinj.core.Wallet;
-import org.bitcoinj.params.RegTestParams;
 import org.bitcoinj.params.TestNet3Params;
-import org.bitcoinj.script.Script;
 import org.bitcoinj.store.UnreadableWalletException;
 import org.bitcoinj.wallet.DeterministicSeed;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.spongycastle.crypto.params.KeyParameter;
-
-import com.google.common.base.Joiner;
 
 public class WalletControllerTest {
 	
@@ -88,7 +75,7 @@ public class WalletControllerTest {
         assertNotNull(controller.getRecieveAddress(false));
         //then save a new wallet file. this one is unencrypted!
         System.out.println("Saving Wallet");
-        String seedcode = controller.saveWalletSeed(testWalletDirectory+"testWallet1.sbox");
+        String seedcode = controller.saveWalletSeed(testWalletDirectory+"testWallet1");
         assertNotNull(seedcode);
         System.out.println(seedcode);
         

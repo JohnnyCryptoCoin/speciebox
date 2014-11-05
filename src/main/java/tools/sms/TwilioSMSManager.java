@@ -1,15 +1,16 @@
 package tools.sms;
 
 //You may want to be more specific in your imports 
-import java.util.*; 
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import com.twilio.sdk.*; 
-import com.twilio.sdk.resource.factory.*; 
-import com.twilio.sdk.resource.instance.*; 
-import com.twilio.sdk.resource.list.*;
+import com.twilio.sdk.TwilioRestClient;
+import com.twilio.sdk.TwilioRestException;
+import com.twilio.sdk.resource.factory.MessageFactory;
+import com.twilio.sdk.resource.instance.Message;
 
 public class TwilioSMSManager {
 	

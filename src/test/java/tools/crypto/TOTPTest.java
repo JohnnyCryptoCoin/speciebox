@@ -1,13 +1,13 @@
 package tools.crypto;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.mockito.Mock;
 
-import tools.crypto.TOTP;
 import tools.crypto.keys.TestKey;
+import tools.crypto.TOTP;
 
 public class TOTPTest {
 	private TestKey key = mock(TestKey.class);

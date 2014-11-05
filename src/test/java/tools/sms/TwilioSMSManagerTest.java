@@ -1,10 +1,5 @@
 package tools.sms;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-
-import tools.sms.TwilioSMSManager;
 
 public class TwilioSMSManagerTest {
 

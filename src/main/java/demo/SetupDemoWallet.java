@@ -6,16 +6,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
 
-import org.apache.log4j.spi.LoggerFactory;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Wallet;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.wallet.DeterministicSeed;
-import org.slf4j.Logger;
 
 import tools.wallet.WalletController;
-
-import com.google.common.base.Joiner;
 
 public class SetupDemoWallet {
 	/**
@@ -45,7 +41,7 @@ public class SetupDemoWallet {
 //      String password = in.nextLine();
 //		wallet.encrypt(password);
         
-        controller.saveWallet(classpath+"DemoWallet"+WalletController.now()+".wallet");
+        controller.saveWallet(classpath+"DemoWallet");
         controller.saveWalletSeed(classpath+"mnemonic_seed.sbx");
         controller.shutdown();
 	}

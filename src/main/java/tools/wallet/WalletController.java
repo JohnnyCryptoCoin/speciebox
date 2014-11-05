@@ -22,18 +22,14 @@ import org.bitcoinj.core.Wallet;
 import org.bitcoinj.core.Wallet.BalanceType;
 import org.bitcoinj.core.WalletEventListener;
 import org.bitcoinj.crypto.DeterministicKey;
-import org.bitcoinj.crypto.KeyCrypter;
 import org.bitcoinj.crypto.KeyCrypterScrypt;
 import org.bitcoinj.kits.WalletAppKit;
 import org.bitcoinj.params.RegTestParams;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.script.Script;
-import org.bitcoinj.store.UnreadableWalletException;
 import org.bitcoinj.wallet.DeterministicSeed;
-import org.spongycastle.crypto.params.KeyParameter;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -98,7 +94,7 @@ public class WalletController {
 	}
 	
 	public boolean saveWallet(String filepath){
-		File walletFile = new File(filepath);
+		File walletFile = new File(filepath+".wallet");
 		try {
 			SPECIEBOX.wallet().saveToFile(walletFile);
 			return true;
@@ -113,7 +109,7 @@ public class WalletController {
 		try {
 			DeterministicSeed seed = SPECIEBOX.wallet().getKeyChainSeed();
 			String mcode =Joiner.on(" ").join(seed.getMnemonicCode());
-	        BufferedWriter out = new BufferedWriter(new FileWriter(filepath));
+	        BufferedWriter out = new BufferedWriter(new FileWriter(filepath+".sbx"));
             out.write(mcode);
             out.close();
             return mcode;
