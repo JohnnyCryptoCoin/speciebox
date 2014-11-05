@@ -6,14 +6,14 @@ import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.params.TestNet3Params;
 
 public class WalletKitTest {
-	private WalletKit walletKit;
+	private HDWalletKit walletKit;
 	
 	//These are wonderful tools provided by bitcoinj for this very purpose
 	private NetworkParameters params = TestNet3Params.get();
 
 	//@Test
 	public void testNewWalletSetupShouldMockConnections() throws Exception{
-		this.walletKit = new WalletKit(params, new File("testFiles/"), "sBox-test");
+		this.walletKit = new HDWalletKit(params, new File("testFiles/"), "sBox-test", 3, 3, true);
 		walletKit.setBlockingStartup(true);
 		
 		//Setup the wallet and make sure spvblockchain files are present
