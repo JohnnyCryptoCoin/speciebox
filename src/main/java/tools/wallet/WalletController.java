@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
 
@@ -160,11 +161,18 @@ public class WalletController {
 	public void sendCoins (Address toAddress, Coin value, boolean isRetry){
 		try {
             Wallet.SendResult result = SPECIEBOX.wallet().sendCoins(SPECIEBOX.peerGroup(), toAddress, value);
+            result.broadcastComplete.get();
             System.out.println("Coins sent. Transaction hash: " + result.tx.getHashAsString());
         } catch (InsufficientMoneyException e) {
             System.out.println("Not enough coins in your wallet, " + e.missing.getValue() + " satoshis are missing (including fees)");
             listenForCoinsAndRetry(value, toAddress);
-        }
+        } catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	private void listenForCoinsAndRetry(final Coin value, final Address toAddress){

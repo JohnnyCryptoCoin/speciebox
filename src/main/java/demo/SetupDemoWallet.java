@@ -42,7 +42,7 @@ public class SetupDemoWallet {
 //		wallet.encrypt(password);
         
         controller.saveWallet(classpath+"DemoWallet");
-        controller.saveWalletSeed(classpath+"mnemonic_seed.sbx");
+        controller.saveWalletSeed(classpath+"mnemonic_seed");
         controller.shutdown();
 	}
 	

@@ -37,10 +37,11 @@ public class ExampleRunner {
 			System.out.println("enter command [load/save/smslogin/print/quit]");
 			cmd = in.nextLine();
 			if(cmd.equals("load")){
-				controller.setupWalletKit(null, "demoWallet/", in.nextLine());
 				System.out.println("enter filename: ");
-				loadDemoWallet(in.nextLine());
+				controller.setupWalletKit(null, "demoWallet/", in.nextLine());
+				System.out.println("loaded wallet successfully");
 			} else if(cmd.equals("seed")){
+				System.out.println("enter filename: ");
 				loadDemoWallet(in.nextLine());
 			} else if(cmd.equals("spend")){
 				try {
@@ -48,7 +49,7 @@ public class ExampleRunner {
 					String stringAddr = in.nextLine();
 					Address toAddress;
 					toAddress = new Address(TestNet3Params.get(), stringAddr);
-					System.out.println("enter value [0.000001,"+(controller.getBalance().getValue()/100000000)+"}: ");
+					System.out.println("enter value [0.000001 BTC,"+controller.getBalance().toFriendlyString()+"]: ");
 					String stringVal = in.nextLine();
 					Coin value = Coin.parseCoin(stringVal);
 					controller.sendCoins(toAddress, value, false);
