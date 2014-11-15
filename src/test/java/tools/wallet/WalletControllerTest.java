@@ -46,7 +46,7 @@ public class WalletControllerTest {
 		cleanup();
 	}
 	
-	@Test
+	//@Test
 	public void testLoadWalletFromFileUnencrypted() throws IOException, UnreadableWalletException {
 		controller.setupWalletKit(null, testWalletDirectory, "specie-wallet-testnet");
 		

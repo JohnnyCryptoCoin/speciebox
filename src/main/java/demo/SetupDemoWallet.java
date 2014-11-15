@@ -40,9 +40,9 @@ public class SetupDemoWallet {
 //		System.out.println("Enter password to encrypt demoWallet: ");
 //      String password = in.nextLine();
 //		wallet.encrypt(password);
-        
-        controller.saveWallet(classpath+"DemoWallet");
-        controller.saveWalletSeed(classpath+"mnemonic_seed");
+        System.out.println("Demo wallet ID");
+        token = in.nextLine();
+        controller.saveWallet(classpath+"DemoWallet"+token);
         controller.shutdown();
 	}
 	
