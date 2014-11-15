@@ -93,7 +93,7 @@ public class HDWalletKit extends WalletAppKit {
     				   int threshold, boolean addSigners, List<DeterministicKeyChain> followingKeyChains) {
     	super(params, directory, filePrefix);
     	this.walletThreshold = threshold;
-    	this.numberOfKeys = followingKeyChains.size();
+    	this.numberOfKeys = followingKeyChains.size()+1;
     	this.addSigners = addSigners;
     	
     	// once the wallet's creation is handled we are going to build a list of DeterministicKeys

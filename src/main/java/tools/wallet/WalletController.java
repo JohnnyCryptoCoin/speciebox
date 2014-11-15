@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -28,6 +29,7 @@ import org.bitcoinj.kits.WalletAppKit;
 import org.bitcoinj.params.RegTestParams;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.script.Script;
+import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
 
 import com.google.common.base.Joiner;
@@ -38,7 +40,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 public class WalletController {
 	
 	private static String APP_NAME = "specie-wallet";
-	protected static WalletAppKit SPECIEBOX;
+	protected static HDWalletKit SPECIEBOX;
 	private static final String DATE_FORMAT_NOW = "yyyyMMdd_HHmmss.SSS";
 	private String filePrefix;
 	private NetworkParameters params;
@@ -59,9 +61,10 @@ public class WalletController {
 		}
     }
 
+    //An HD wallet kit with 1/1 signers is basically a regular wallet
 	public void setupWalletKit(@Nullable DeterministicSeed seed, String walletDirectory) {
 		// If seed is non-null it means we are restoring from backup.
-		SPECIEBOX = new WalletAppKit(params, new File(walletDirectory), filePrefix);
+		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), filePrefix, 1, 1, true);
 		if (seed != null) {
 			SPECIEBOX.restoreWalletFromSeed(seed);
 		}
@@ -76,7 +79,7 @@ public class WalletController {
 	
 	public void setupWalletKit(@Nullable DeterministicSeed seed, String walletDirectory, String fileName) {
 		// If seed is non-null it means we are restoring from backup.
-		SPECIEBOX = new WalletAppKit(params, new File(walletDirectory), fileName);
+		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), fileName, 1, 1, true);
 		if (seed != null) {
 			SPECIEBOX.restoreWalletFromSeed(seed);
 		}
@@ -132,12 +135,6 @@ public class WalletController {
 		isEncrypted = false;
 	}
 	
-	public void marryWallets(Wallet spouse){
-		DeterministicKey spouseKey = spouse.getWatchingKey();
-		// threshold of 2 keys,
-		// bitcoin.wallet().addFollowingAccountKeys(Lists.newArrayList(spouseKey), 2);
-	}
-	
 	public void addListener(WalletEventListener listener){
 		SPECIEBOX.wallet().addEventListener(listener);
 	}
@@ -150,6 +147,10 @@ public class WalletController {
 	// when we want to know exactly what to expose
 	public Wallet getWallet(){
 		return SPECIEBOX.wallet();
+	}
+	
+	public DeterministicKeyChain getActiveKeychain(){
+		return SPECIEBOX.wallet().getActiveKeychain();
 	}
 	
 	public static String now() {
@@ -247,5 +248,10 @@ public void onKeysAdded(List<ECKey> keys) {
 @Override
 public void onScriptsAdded(Wallet wallet, List<Script> scripts) {
     System.out.println("new script added");
+    Iterator<Script> scriptIt = scripts.iterator();
+    while(scriptIt.hasNext()){
+    	Script currentScript = scriptIt.next();
+    	System.out.println(currentScript.toString());
+    }
 }
 }
