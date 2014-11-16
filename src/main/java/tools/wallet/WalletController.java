@@ -25,7 +25,6 @@ import org.bitcoinj.core.Wallet.BalanceType;
 import org.bitcoinj.core.WalletEventListener;
 import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.crypto.KeyCrypterScrypt;
-import org.bitcoinj.kits.WalletAppKit;
 import org.bitcoinj.params.RegTestParams;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.script.Script;
@@ -36,6 +35,8 @@ import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+
+import tools.wallet.HDWalletKit;
 
 public class WalletController {
 	
@@ -81,16 +82,15 @@ public class WalletController {
 		// If seed is non-null it means we are restoring from backup.
 		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), filePrefix, threshold, keys, true);
 		if (seed != null) {
-		SPECIEBOX.restoreWalletFromSeed(seed);
+			SPECIEBOX.restoreWalletFromSeed(seed);
 		}
 		startupWalletKit();
 	}
 	
 	//reload a wallet with this
 	public void setupWalletKit(String walletDirectory, String fileName) {
-		// If seed is non-null it means we are restoring from backup.
 		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), fileName);
-		
+		System.out.println("Loading an HD wallet");
 		startupWalletKit();
     }
 	
@@ -214,8 +214,7 @@ public class WalletController {
 		StringBuilder out = new StringBuilder();
 		out.append("This is a ");
 		out.append(SPECIEBOX.getThreshold());
-		out.append("/");
-		out.append(SPECIEBOX.getMKeys());
+		out.append("/n");
 		out.append("\n \n ------------------------------------------------ \n");
 		out.append(SPECIEBOX.wallet().toString());
 		return out.toString();
@@ -271,6 +270,8 @@ public void onScriptsAdded(Wallet wallet, List<Script> scripts) {
     while(scriptIt.hasNext()){
     	Script currentScript = scriptIt.next();
     	System.out.println(currentScript.toString());
+    	
+    	System.out.println("Need "+ currentScript.getNumberOfSignaturesRequiredToSpend() + " sigs to spend");
     }
 }
 }

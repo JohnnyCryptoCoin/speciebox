@@ -31,9 +31,10 @@ import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.kits.WalletAppKit;
 import org.bitcoinj.signers.TransactionSigner;
 import org.bitcoinj.store.BlockStoreException;
-import org.bitcoinj.testing.KeyChainTransactionSigner;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.MarriedKeyChain;
+
+import tools.crypto.DemoTransactionSigner;
 
 import com.google.common.collect.Lists;
 
@@ -62,8 +63,8 @@ import com.google.common.collect.Lists;
  */
 public class HDWalletKit extends WalletAppKit {
 	
-	private boolean RELOAD = false;
-	private int walletThreshold, numberOfKeys;
+	protected boolean RELOAD = false;
+	private int walletThreshold;
 	private boolean addSigners;
 	private List<DeterministicKeyChain> followingKeyChains;
 	
@@ -77,12 +78,11 @@ public class HDWalletKit extends WalletAppKit {
     			int keys, boolean addSigners) {
     	super(params, directory, filePrefix);
     	this.walletThreshold = threshold;
-    	this.numberOfKeys = keys;
     	this.addSigners = addSigners;
     	
     	// once the wallet's creation is handled we are going to add this list of DeterministicKeys
         this.followingKeyChains = Lists.newArrayList();
-        for (int i = 0; i < numberOfKeys - 1; i++) {
+        for (int i = 0; i < keys - 1; i++) {
             final DeterministicKeyChain keyChain = new DeterministicKeyChain(new SecureRandom());
             
             followingKeyChains.add(keyChain);
@@ -94,7 +94,6 @@ public class HDWalletKit extends WalletAppKit {
     			boolean addSigners, List<DeterministicKeyChain> followingKeyChains) {
     	super(params, directory, filePrefix);
     	this.walletThreshold = threshold;
-    	this.numberOfKeys = followingKeyChains.size()+1;
     	this.addSigners = addSigners;
     	
     	// once the wallet's creation is handled we are going to build a list of DeterministicKeys
@@ -105,7 +104,6 @@ public class HDWalletKit extends WalletAppKit {
     public HDWalletKit(NetworkParameters params, File file, String fileName) {
     	super(params, file, fileName);
     	this.walletThreshold = 1;
-    	this.numberOfKeys = 1;
     	this.addSigners = true;
     	this.followingKeyChains = null;
     	this.RELOAD = true;
@@ -122,26 +120,18 @@ public class HDWalletKit extends WalletAppKit {
     	return walletThreshold;
     }
     
-    public int getMKeys(){
-    	return numberOfKeys;
-    }
-    
     public List<TransactionSigner> getSigners(){
     	return this.wallet().getTransactionSigners();
     }
     
     @Override
     protected void onSetupCompleted() {
-    	// in lieu of a logger...
-    	System.out.println("Setup has been completed");
-    	
     	if(RELOAD){
     		this.walletThreshold = wallet().getTransactionSigners().size()+1;
-        	this.numberOfKeys = wallet().getWatchedAddresses().size()+1;
+    		System.out.println("Wallet reload successful");
     	}
-    	
-    	//if we choose to store logs on user devices...
-    	log.info("Setup has been completed");
+    	// in lieu of a logger...
+    	System.out.println("Setup has now been completed");
     }
 
     // In our HD startup method we will create a number of following keys based on numberOfKeys
@@ -160,7 +150,7 @@ public class HDWalletKit extends WalletAppKit {
     			
     			followingKeys.add(partnerKey);
     			if(addSigners && i < walletThreshold - 1){
-    				this.wallet().addTransactionSigner(new KeyChainTransactionSigner(keyChain));
+    				this.wallet().addTransactionSigner(new DemoTransactionSigner(keyChain));
     				i++;
     			}
     		}

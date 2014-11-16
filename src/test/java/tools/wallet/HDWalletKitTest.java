@@ -14,7 +14,9 @@ import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Wallet;
+import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.params.TestNet3Params;
+import org.bitcoinj.signers.TransactionSigner;
 import org.bitcoinj.wallet.DeterministicSeed;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.junit.After;
@@ -29,21 +31,42 @@ public class HDWalletKitTest {
 	//These are wonderful tools provided by bitcoinj for this very purpose
 	private NetworkParameters params = TestNet3Params.get();
 
-	//@Test
-	public void testSetupHDWalletHasSigners() throws Exception{
-		walletKit_1 = new HDWalletKit(params, new File(testDirectory), filePrefix, 1, 1, true);
+	@Test
+	public void testSetupHDWalletandReload() throws Exception{
+		String name = filePrefix+System.currentTimeMillis();
+		File dir = new File(testDirectory);
+		walletKit_1 = new HDWalletKit(params, dir, name, 2, 2, true);
 		walletKit_1.startAsync();
 		walletKit_1.awaitRunning();
 		
 		System.out.println("Doing things");
-        assertTrue(walletKit_1.getSigners().size() == 1);
+        assertTrue(walletKit_1.getSigners().size() == 2);
+        
+        int tSigners = walletKit_1.getSigners().size();
+        DeterministicKey watch1 = walletKit_1.wallet().getWatchingKey();
+        System.out.println(watch1.toString());
         
 		walletKit_1.stopAsync();
 		walletKit_1.awaitTerminated();
         
+		System.out.println("shutdown wallet 1 loading wallet 2");
+		
+		walletKit_2 = new HDWalletKit(params, dir, name);
+		assertTrue(walletKit_2.RELOAD);
+		
+		walletKit_2.startAsync();
+		walletKit_2.awaitRunning();
+		
+		DeterministicKey watch2 = walletKit_2.wallet().getWatchingKey();
+        System.out.println(watch2.toString());
+		
+		assertEquals(tSigners, walletKit_2.getSigners().size());
+		assertEquals(watch1, watch2);
+		walletKit_2.stopAsync();
+		walletKit_2.awaitTerminated();
 	}
 	
-	@Test
+	//@Test
 	public void testSetupHDWalletWithRealWatchingKey() throws Exception{
 		walletKit_1 = new HDWalletKit(params, new File(testDirectory), filePrefix+System.currentTimeMillis(), 1, 1, true);
 		walletKit_1.startAsync();
