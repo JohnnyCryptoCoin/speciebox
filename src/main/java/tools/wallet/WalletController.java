@@ -63,8 +63,14 @@ public class WalletController {
 
     //An HD wallet kit with 1/1 signers is basically a regular wallet
 	public void setupWalletKit(@Nullable DeterministicSeed seed, String walletDirectory) {
+		setupWalletKit(seed, walletDirectory, 1, 1);
+    }
+	
+	//An HD wallet kit with n/m signers and provided followingKeyChains
+	public void setupWalletKit(@Nullable DeterministicSeed seed, String walletDirectory, 
+			                   int threshold, List<DeterministicKeyChain> followingKeyChains) {
 		// If seed is non-null it means we are restoring from backup.
-		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), filePrefix, 1, 1, true);
+		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), filePrefix, threshold, true, followingKeyChains);
 		if (seed != null) {
 			SPECIEBOX.restoreWalletFromSeed(seed);
 		}
@@ -77,12 +83,26 @@ public class WalletController {
         SPECIEBOX.wallet().addEventListener(wListener);
     }
 	
-	public void setupWalletKit(@Nullable DeterministicSeed seed, String walletDirectory, String fileName) {
+	public void setupWalletKit(@Nullable DeterministicSeed seed, String walletDirectory, int threshold, int keys) {
 		// If seed is non-null it means we are restoring from backup.
-		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), fileName, 1, 1, true);
+		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), filePrefix, threshold, keys, true);
 		if (seed != null) {
-			SPECIEBOX.restoreWalletFromSeed(seed);
+		SPECIEBOX.restoreWalletFromSeed(seed);
 		}
+		SPECIEBOX.setAutoSave(true);
+		// Download the block chain and wait until it's done.
+		SPECIEBOX.startAsync();
+		SPECIEBOX.awaitRunning();
+		
+		WalletListener wListener = new WalletListener();
+		SPECIEBOX.wallet().addEventListener(wListener);
+	}
+	
+	//reload a wallet with this
+	public void setupWalletKit(String walletDirectory, String fileName) {
+		// If seed is non-null it means we are restoring from backup.
+		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), fileName);
+		
 		SPECIEBOX.setAutoSave(true);
         // Download the block chain and wait until it's done.
         SPECIEBOX.startAsync();

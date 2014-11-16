@@ -26,7 +26,7 @@ public class SetupDemoWallet {
 		
 		NetworkParameters params = TestNet3Params.get();
 		WalletController controller = new WalletController(params);
-		controller.setupWalletKit(null, "demoWallet/");
+		controller.setupWalletKit(null, "demoWallet/", 1, 1);
 		Wallet wallet = controller.getWallet();
 		
 		System.out.println(wallet.toString());

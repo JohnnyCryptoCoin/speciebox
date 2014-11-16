@@ -5,10 +5,15 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
 
+import org.bitcoinj.core.Address;
+import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.core.Wallet;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.wallet.DeterministicSeed;
 import org.bitcoinj.wallet.DeterministicKeyChain;
@@ -55,6 +60,18 @@ public class HDWalletKitTest {
 		
 		assertTrue(walletKit_2.getSigners().size() == 2);
 		
+		walletKit_1.wallet().toString();
+		System.out.println("------------------------------------------------------------");
+		walletKit_2.wallet().toString();
+		
+		WalletListener wListener = new WalletListener();
+		walletKit_1.wallet().addEventListener(wListener);
+		walletKit_2.wallet().addEventListener(wListener);
+		
+		Coin amount = Coin.valueOf(0,20);
+		
+		
+		
 		walletKit_1.stopAsync();
 		walletKit_1.awaitTerminated();
 		walletKit_2.stopAsync();
@@ -62,6 +79,22 @@ public class HDWalletKitTest {
         
 	}
 
+	public void simpleSend (Address toAddress, Coin value){
+		try {
+            Wallet.SendResult result = walletKit_2.wallet().sendCoins(walletKit_2.peerGroup(), toAddress, value);
+            result.broadcastComplete.get();
+            System.out.println("Coins sent. Transaction hash: " + result.tx.getHashAsString());
+        } catch (InsufficientMoneyException e) {
+            System.out.println("Not enough coins in your wallet, " + e.missing.getValue() + " satoshis are missing (including fees)");
+        } catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	@After
 	public void cleanup(){
 		File dir = new File(testDirectory);

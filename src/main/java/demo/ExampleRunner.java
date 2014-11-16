@@ -38,7 +38,7 @@ public class ExampleRunner {
 			cmd = in.nextLine();
 			if(cmd.equals("load")){
 				System.out.println("enter filename: ");
-				controller.setupWalletKit(null, "demoWallet/", in.nextLine());
+				controller.setupWalletKit("demoWallet/", in.nextLine());
 				System.out.println("loaded wallet successfully");
 			} 
 			

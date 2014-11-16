@@ -48,7 +48,7 @@ public class WalletControllerTest {
 	
 	//@Test
 	public void testLoadWalletFromFileUnencrypted() throws IOException, UnreadableWalletException {
-		controller.setupWalletKit(null, testWalletDirectory, "specie-wallet-testnet");
+		controller.setupWalletKit(testWalletDirectory, "specie-wallet-testnet");
 		
         assertNotNull(controller.getRecieveAddress(true));
         System.out.println(controller.toString());
@@ -58,7 +58,7 @@ public class WalletControllerTest {
 	
 	@Test
 	public void testEncryptAndDecryptWallet(){
-		controller.setupWalletKit(null, testDirectory);
+		controller.setupWalletKit(null, testDirectory, 1, 1);
 		String password = "specieBoxFinalProject";
 		controller.encryptWallet("specieBoxFinalProject");
 		assertTrue(controller.isEncrypted);
@@ -70,7 +70,7 @@ public class WalletControllerTest {
 	
 	//@Test
 	public void testSaveWalletSeedShouldSaveWalletToDiskAndReloadItFromMSeed() throws IOException, UnreadableWalletException {
-		controller.setupWalletKit(null, testDirectory);
+		controller.setupWalletKit(null, testDirectory, 1, 1);
 		
         assertNotNull(controller.getRecieveAddress(false));
         //then save a new wallet file. this one is unencrypted!
@@ -97,7 +97,7 @@ public class WalletControllerTest {
 	
 	//@Test
 	public void testSendFakeCoins() throws AddressFormatException {
-		controller.setupWalletKit(null, testDirectory);
+		controller.setupWalletKit(null, testDirectory, 1, 1);
 		
 		// To test everything we create and print a fresh receiving address. 
 		// Send some coins to "TP's TestNet Faucet" return wallet.

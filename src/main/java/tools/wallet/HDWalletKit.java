@@ -62,9 +62,10 @@ import com.google.common.collect.Lists;
  */
 public class HDWalletKit extends WalletAppKit {
 	
-	private final int walletThreshold, numberOfKeys;
-	private final boolean addSigners;
-	private final List<DeterministicKeyChain> followingKeyChains;
+	private boolean RELOAD = false;
+	private int walletThreshold, numberOfKeys;
+	private boolean addSigners;
+	private List<DeterministicKeyChain> followingKeyChains;
 	
 	
 	// As of Bitcoin Core 0.9 all multisig transactions which require more than 3 public keys are non-standard
@@ -72,7 +73,7 @@ public class HDWalletKit extends WalletAppKit {
 	// a std one while it goes out into the world?
 	
 	// creats a wallet that need Threshold of Keys (X out of Y) to spend
-    public HDWalletKit(NetworkParameters params, File directory, String filePrefix,
+    HDWalletKit(NetworkParameters params, File directory, String filePrefix,
     				   int threshold, int keys, boolean addSigners) {
     	super(params, directory, filePrefix);
     	this.walletThreshold = threshold;
@@ -89,7 +90,7 @@ public class HDWalletKit extends WalletAppKit {
     }
     
  // creats a wallet that need Threshold of Keys (X out of Y) to spend
-    public HDWalletKit(NetworkParameters params, File directory, String filePrefix,
+    HDWalletKit(NetworkParameters params, File directory, String filePrefix,
     				   int threshold, boolean addSigners, List<DeterministicKeyChain> followingKeyChains) {
     	super(params, directory, filePrefix);
     	this.walletThreshold = threshold;
@@ -100,7 +101,16 @@ public class HDWalletKit extends WalletAppKit {
         this.followingKeyChains = followingKeyChains;
     }
 
-    // If true, the wallet will save itself to disk automatically whenever it changes.
+    public HDWalletKit(NetworkParameters params, File file, String fileName) {
+    	super(params, file, fileName);
+    	this.walletThreshold = 1;
+    	this.numberOfKeys = 1;
+    	this.addSigners = true;
+    	this.followingKeyChains = null;
+    	this.RELOAD = true;
+	}
+
+	// If true, the wallet will save itself to disk automatically whenever it changes.
     public HDWalletKit setAutoSave(boolean value) {
         checkState(state() == State.NEW, "Cannot call after startup");
         useAutoSave = value;
@@ -129,31 +139,32 @@ public class HDWalletKit extends WalletAppKit {
     protected void startUp() throws Exception {
     	super.startUp();
     	
-    	List<DeterministicKey> followingKeys = new ArrayList<DeterministicKey>();
-        Iterator<DeterministicKeyChain> it = followingKeyChains.iterator();
-        int i = 0;
-        while(it.hasNext()) {
-        	DeterministicKeyChain keyChain = it.next();
-        	//method that gets watching key for the new list of following keys. we can get the watchingkey of any Wallet though
-            DeterministicKey partnerKey = DeterministicKey.deserializeB58(null, keyChain.getWatchingKey().serializePubB58());
-            
-            followingKeys.add(partnerKey);
-        	if(addSigners && i < walletThreshold - 1){
-        		this.wallet().addTransactionSigner(new KeyChainTransactionSigner(keyChain));
-        		i++;
-        	}
-        }
+    	if(! RELOAD){
+    		List<DeterministicKey> followingKeys = new ArrayList<DeterministicKey>();
+    		Iterator<DeterministicKeyChain> it = followingKeyChains.iterator();
+    		int i = 0;
+    		while(it.hasNext()) {
+    			DeterministicKeyChain keyChain = it.next();
+    			//method that gets watching key for the new list of following keys. we can get the watchingkey of any Wallet though
+    			DeterministicKey partnerKey = DeterministicKey.deserializeB58(null, keyChain.getWatchingKey().serializePubB58());
+    			
+    			followingKeys.add(partnerKey);
+    			if(addSigners && i < walletThreshold - 1){
+    				this.wallet().addTransactionSigner(new KeyChainTransactionSigner(keyChain));
+    				i++;
+    			}
+    		}
+    		// This keychain keeps track of "following keychains" that follow the account key of this keychain.
+    		// You can get P2SH addresses to receive coins to from this chain. The threshold (walletThreshold)
+    		// specifies how many signatures required to spend transactions for this married keychain.
+    		MarriedKeyChain chain = MarriedKeyChain.builder()
+    				.random(new SecureRandom())
+    				.followingKeys(followingKeys)
+    				.threshold(walletThreshold).build();
+    		this.wallet().addAndActivateHDChain(chain);
+    		//We can create new wallets from each of these following keys, and they will start as part of the HD structure.
+    	}
 
-        // This keychain keeps track of "following keychains" that follow the account key of this keychain.
-        // You can get P2SH addresses to receive coins to from this chain. The threshold (walletThreshold)
-        // specifies how many signatures required to spend transactions for this married keychain.
-        MarriedKeyChain chain = MarriedKeyChain.builder()
-                .random(new SecureRandom())
-                .followingKeys(followingKeys)
-                .threshold(walletThreshold).build();
-        this.wallet().addAndActivateHDChain(chain);
-        //We can create new wallets from each of these following keys, and they will start as part of the HD structure.
-        //Conversely, there should be another constructor/startup that accepts a list of DeterministicKey
     }
 
     @Override
