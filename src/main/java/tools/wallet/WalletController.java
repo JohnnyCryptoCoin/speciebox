@@ -74,13 +74,7 @@ public class WalletController {
 		if (seed != null) {
 			SPECIEBOX.restoreWalletFromSeed(seed);
 		}
-		SPECIEBOX.setAutoSave(true);
-        // Download the block chain and wait until it's done.
-        SPECIEBOX.startAsync();
-        SPECIEBOX.awaitRunning();
-        
-        WalletListener wListener = new WalletListener();
-        SPECIEBOX.wallet().addEventListener(wListener);
+		startupWalletKit();
     }
 	
 	public void setupWalletKit(@Nullable DeterministicSeed seed, String walletDirectory, int threshold, int keys) {
@@ -89,13 +83,7 @@ public class WalletController {
 		if (seed != null) {
 		SPECIEBOX.restoreWalletFromSeed(seed);
 		}
-		SPECIEBOX.setAutoSave(true);
-		// Download the block chain and wait until it's done.
-		SPECIEBOX.startAsync();
-		SPECIEBOX.awaitRunning();
-		
-		WalletListener wListener = new WalletListener();
-		SPECIEBOX.wallet().addEventListener(wListener);
+		startupWalletKit();
 	}
 	
 	//reload a wallet with this
@@ -103,6 +91,10 @@ public class WalletController {
 		// If seed is non-null it means we are restoring from backup.
 		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), fileName);
 		
+		startupWalletKit();
+    }
+	
+	private void startupWalletKit(){
 		SPECIEBOX.setAutoSave(true);
         // Download the block chain and wait until it's done.
         SPECIEBOX.startAsync();
@@ -110,7 +102,7 @@ public class WalletController {
         
         WalletListener wListener = new WalletListener();
         SPECIEBOX.wallet().addEventListener(wListener);
-    }
+	}
 	
 	public void shutdown(){
 		SPECIEBOX.stopAsync();
@@ -219,7 +211,14 @@ public class WalletController {
 	
 	@Override
 	public String toString(){
-		return SPECIEBOX.wallet().toString();
+		StringBuilder out = new StringBuilder();
+		out.append("This is a ");
+		out.append(SPECIEBOX.getThreshold());
+		out.append("/");
+		out.append(SPECIEBOX.getMKeys());
+		out.append("\n \n ------------------------------------------------ \n");
+		out.append(SPECIEBOX.wallet().toString());
+		return out.toString();
 	}
 
 	public Coin getBalance() {

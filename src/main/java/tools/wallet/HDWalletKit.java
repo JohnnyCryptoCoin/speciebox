@@ -73,8 +73,8 @@ public class HDWalletKit extends WalletAppKit {
 	// a std one while it goes out into the world?
 	
 	// creats a wallet that need Threshold of Keys (X out of Y) to spend
-    HDWalletKit(NetworkParameters params, File directory, String filePrefix,
-    				   int threshold, int keys, boolean addSigners) {
+    HDWalletKit(NetworkParameters params, File directory, String filePrefix, int threshold, 
+    			int keys, boolean addSigners) {
     	super(params, directory, filePrefix);
     	this.walletThreshold = threshold;
     	this.numberOfKeys = keys;
@@ -90,8 +90,8 @@ public class HDWalletKit extends WalletAppKit {
     }
     
  // creats a wallet that need Threshold of Keys (X out of Y) to spend
-    HDWalletKit(NetworkParameters params, File directory, String filePrefix,
-    				   int threshold, boolean addSigners, List<DeterministicKeyChain> followingKeyChains) {
+    HDWalletKit(NetworkParameters params, File directory, String filePrefix, int threshold, 
+    			boolean addSigners, List<DeterministicKeyChain> followingKeyChains) {
     	super(params, directory, filePrefix);
     	this.walletThreshold = threshold;
     	this.numberOfKeys = followingKeyChains.size()+1;
@@ -101,6 +101,7 @@ public class HDWalletKit extends WalletAppKit {
         this.followingKeyChains = followingKeyChains;
     }
 
+    //loads a wallet from file
     public HDWalletKit(NetworkParameters params, File file, String fileName) {
     	super(params, file, fileName);
     	this.walletThreshold = 1;
@@ -121,6 +122,10 @@ public class HDWalletKit extends WalletAppKit {
     	return walletThreshold;
     }
     
+    public int getMKeys(){
+    	return numberOfKeys;
+    }
+    
     public List<TransactionSigner> getSigners(){
     	return this.wallet().getTransactionSigners();
     }
@@ -129,6 +134,11 @@ public class HDWalletKit extends WalletAppKit {
     protected void onSetupCompleted() {
     	// in lieu of a logger...
     	System.out.println("Setup has been completed");
+    	
+    	if(RELOAD){
+    		this.walletThreshold = wallet().getTransactionSigners().size()+1;
+        	this.numberOfKeys = wallet().getWatchedAddresses().size()+1;
+    	}
     	
     	//if we choose to store logs on user devices...
     	log.info("Setup has been completed");
