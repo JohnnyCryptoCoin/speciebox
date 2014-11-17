@@ -3,6 +3,7 @@ package tools.wallet;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -35,30 +36,27 @@ public class HDWalletKitTest {
 	public void testSetupHDWalletandReload() throws Exception{
 		String name = filePrefix+System.currentTimeMillis();
 		File dir = new File(testDirectory);
-		walletKit_1 = new HDWalletKit(params, dir, name);
+		walletKit_1 = new HDWalletKit(params, dir, name, 1);
 		walletKit_1.startAsync();
 		walletKit_1.awaitRunning();
 		
-		System.out.println("Doing things");
         assertTrue(walletKit_1.getSigners().size() == 1);
         
         int tSigners = walletKit_1.getSigners().size();
         DeterministicKey watch1 = walletKit_1.wallet().getWatchingKey();
-        System.out.println(watch1.toString());
         
 		walletKit_1.stopAsync();
 		walletKit_1.awaitTerminated();
         
 		System.out.println("shutdown wallet 1 loading wallet 2");
 		
-		walletKit_2 = new HDWalletKit(params, dir, name);
+		walletKit_2 = new HDWalletKit(params, dir, name, 1);
 		assertTrue(walletKit_2.RELOAD);
 		
 		walletKit_2.startAsync();
 		walletKit_2.awaitRunning();
 		
 		DeterministicKey watch2 = walletKit_2.wallet().getWatchingKey();
-        System.out.println(watch2.toString());
 		
 		assertEquals(tSigners, walletKit_2.getSigners().size());
 		assertEquals(watch1, watch2);
@@ -66,40 +64,22 @@ public class HDWalletKitTest {
 		walletKit_2.awaitTerminated();
 	}
 	
-	//@Test
-	public void testSetupHDWalletWithRealWatchingKey() throws Exception{
-		walletKit_1 = new HDWalletKit(params, new File(testDirectory), filePrefix+System.currentTimeMillis());
+	@Test
+	public void testSetupHDWalletAndAddWatchingKey() throws Exception{
+		walletKit_1 = new HDWalletKit(params, new File(testDirectory), filePrefix+System.currentTimeMillis(), 2);
 		walletKit_1.startAsync();
 		walletKit_1.awaitRunning();
 		
-		System.out.println("Doing things");
+		assertTrue(walletKit_1.getThreshold() == 2);
         assertTrue(walletKit_1.getSigners().size() == 1);
+        SecureRandom random = new SecureRandom();
+        DeterministicKeyChain chain = new DeterministicKeyChain(random);
         
-        List<DeterministicKeyChain> chain = new ArrayList<DeterministicKeyChain>();
-        chain.add(walletKit_1.wallet().getActiveKeychain());
-        walletKit_2 = new HDWalletKit(params, new File(testDirectory), filePrefix+System.currentTimeMillis());
-		walletKit_2.startAsync();
-		walletKit_2.awaitRunning();
-		
-		assertTrue(walletKit_2.getSigners().size() == 1);
-		
-		walletKit_1.wallet().toString();
-		System.out.println("------------------------------------------------------------");
-		walletKit_2.wallet().toString();
-		
-		WalletListener wListener = new WalletListener();
-		walletKit_1.wallet().addEventListener(wListener);
-		walletKit_2.wallet().addEventListener(wListener);
-		
-		Coin amount = Coin.valueOf(0,20);
-		
-		
-		
+        
+        walletKit_1.addPairedWallet(chain.getWatchingKey(), true);
+        assertTrue(walletKit_1.getSigners().size() == 2);
 		walletKit_1.stopAsync();
 		walletKit_1.awaitTerminated();
-		walletKit_2.stopAsync();
-		walletKit_2.awaitTerminated();
-        
 	}
 
 	public void simpleSend (Address toAddress, Coin value){

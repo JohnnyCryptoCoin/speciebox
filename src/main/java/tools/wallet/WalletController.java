@@ -64,7 +64,7 @@ public class WalletController {
 
     //An HD wallet kit with 1/1 signers is basically a regular wallet
 	public void setupWalletKit(@Nullable DeterministicSeed seed, String walletDirectory) {
-		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), filePrefix);
+		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), filePrefix, 1);
 		if (seed != null) {
 			SPECIEBOX.restoreWalletFromSeed(seed);
 		}
@@ -84,7 +84,7 @@ public class WalletController {
 	
 	//reload a wallet with this. We elect to not reload from a mn-seed
 	public void setupWalletKit(String walletDirectory, String fileName) {
-		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), fileName);
+		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), fileName, 1);
 		System.out.println("Loading an HD wallet");
 		startupWalletKit();
     }

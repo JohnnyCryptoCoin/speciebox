@@ -63,8 +63,10 @@ import com.google.common.collect.Lists;
  */
 public class HDWalletKit extends WalletAppKit {
 	
+	private final int walletThreshold;
+
+	private int currentSigners;
 	protected boolean RELOAD = false;
-	private int walletThreshold;
 	private boolean addSigners;
 	private List<DeterministicKey> followingKeys;
 	
@@ -74,9 +76,9 @@ public class HDWalletKit extends WalletAppKit {
 	// a std one while it goes out into the world?
 	
 	//loads a wallet from file or creats a new one with no followingkeys and a threshold of 1
-	public HDWalletKit(NetworkParameters params, File file, String fileName) {
+	public HDWalletKit(NetworkParameters params, File file, String fileName, int threshold) {
 		super(params, file, fileName);
-		this.walletThreshold = 1;
+		this.walletThreshold = threshold;
 		this.addSigners = true;
 		this.followingKeys = null;
 		this.RELOAD = true;
@@ -102,20 +104,21 @@ public class HDWalletKit extends WalletAppKit {
     }
     
     public void addPairedWallet (DeterministicKey watchKey, boolean increaseThreshold){
-    	System.out.println("This "+walletThreshold+"/"+followingKeys.size()+1);
-    	followingKeys.add(watchKey);
+    	System.out.println("This "+currentSigners+"/"+(followingKeys.size()+1)+" wallet");
     	
-    	DeterministicKey partnerKey = DeterministicKey.deserializeB58(null, watchKey.serializePubB58());
-		if(increaseThreshold){
+    	followingKeys.add(watchKey);
+		if(increaseThreshold && currentSigners < walletThreshold){
+			currentSigners++;
 			this.wallet().addTransactionSigner(new DemoTransactionSigner(watchKey));
 		}
 	
+		//We can leverage addAndActivateHDChain 
 		MarriedKeyChain chain = MarriedKeyChain.builder()
 				.random(new SecureRandom())
 				.followingKeys(DeterministicKey.deserializeB58(null, watchKey.serializePubB58()))
 				.threshold(walletThreshold).build();
 		this.wallet().addAndActivateHDChain(chain);
-    	
+    	System.out.println("Is now a "+currentSigners+"/"+(followingKeys.size()+1)+" wallet");
     }
     
     public int getThreshold(){
@@ -133,9 +136,11 @@ public class HDWalletKit extends WalletAppKit {
     @Override
     protected void onSetupCompleted() {
     	if(RELOAD){
-    		this.walletThreshold = wallet().getTransactionSigners().size()+1;
     		System.out.println("Wallet reload successful");
+    	} else {
+    		System.out.println("Not a reload");
     	}
+    	this.currentSigners = wallet().getTransactionSigners().size();
     	// in lieu of a logger...
     	System.out.println("Setup has now been completed");
     }
