@@ -165,6 +165,10 @@ public class WalletController {
 		return SPECIEBOX.wallet().getActiveKeychain();
 	}
 	
+	public List<DeterministicKeyChain> getFollowingKeyChains(){
+		return SPECIEBOX.getFollowingKeys();
+	}
+	
 	public static String now() {
 		Calendar cal = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
@@ -261,6 +265,9 @@ public void onWalletChanged(Wallet wallet) {
 @Override
 public void onKeysAdded(List<ECKey> keys) {
     System.out.println("new key added");
+//    for(int i=0; i<keys.size();i++){
+//    	System.out.println(keys.get(i));
+//    }
 }
 
 @Override

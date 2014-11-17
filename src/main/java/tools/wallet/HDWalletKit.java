@@ -124,6 +124,10 @@ public class HDWalletKit extends WalletAppKit {
     	return this.wallet().getTransactionSigners();
     }
     
+    public List<DeterministicKeyChain> getFollowingKeys(){
+    	return this.followingKeyChains;
+    }
+    
     @Override
     protected void onSetupCompleted() {
     	if(RELOAD){
