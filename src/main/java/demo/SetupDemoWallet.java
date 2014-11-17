@@ -8,6 +8,7 @@ import java.util.Scanner;
 
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Wallet;
+import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.wallet.DeterministicSeed;
 
@@ -26,11 +27,15 @@ public class SetupDemoWallet {
 		
 		NetworkParameters params = TestNet3Params.get();
 		WalletController controller = new WalletController(params);
-		controller.setupWalletKit(null, "demoWallet/", 1, 1);
+		DeterministicSeed nullSeed = null;
+		controller.setupWalletKit(nullSeed, "demoWallet/");
 		Wallet wallet = controller.getWallet();
 		
 		System.out.println(wallet.toString());
 		
+		System.out.println("---------------------------------------------------");
+		System.out.println("watchingKey: " + wallet.getWatchingKey().toString());
+		System.out.println("B58 FollowingKey: " + DeterministicKey.deserializeB58(null, wallet.getWatchingKey().serializePubB58()));
 		System.out.println("---------------------------------------------------");
 		System.out.println("Send coins to: " + controller.getRecieveAddress(true));
 		

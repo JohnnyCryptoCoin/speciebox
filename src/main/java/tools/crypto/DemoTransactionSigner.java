@@ -16,12 +16,18 @@ import java.util.List;
 public class DemoTransactionSigner extends CustomTransactionSigner {
 
     private DeterministicKeyChain keyChain;
+    private DeterministicKey watchingKey;
 
     public DemoTransactionSigner() {
     }
 
+    // Older style where we start up with a keychain. Not as desireable i think?
     public DemoTransactionSigner(DeterministicKeyChain keyChain) {
         this.keyChain = keyChain;
+    }
+    
+    public DemoTransactionSigner(DeterministicKey watchingKey) {
+        this.watchingKey = watchingKey;
     }
 
     //The question to answer is Who am I? I have to find a way to get the signing key without relying on previous signer

@@ -35,12 +35,12 @@ public class HDWalletKitTest {
 	public void testSetupHDWalletandReload() throws Exception{
 		String name = filePrefix+System.currentTimeMillis();
 		File dir = new File(testDirectory);
-		walletKit_1 = new HDWalletKit(params, dir, name, 2, 2, true);
+		walletKit_1 = new HDWalletKit(params, dir, name);
 		walletKit_1.startAsync();
 		walletKit_1.awaitRunning();
 		
 		System.out.println("Doing things");
-        assertTrue(walletKit_1.getSigners().size() == 2);
+        assertTrue(walletKit_1.getSigners().size() == 1);
         
         int tSigners = walletKit_1.getSigners().size();
         DeterministicKey watch1 = walletKit_1.wallet().getWatchingKey();
@@ -68,7 +68,7 @@ public class HDWalletKitTest {
 	
 	//@Test
 	public void testSetupHDWalletWithRealWatchingKey() throws Exception{
-		walletKit_1 = new HDWalletKit(params, new File(testDirectory), filePrefix+System.currentTimeMillis(), 1, 1, true);
+		walletKit_1 = new HDWalletKit(params, new File(testDirectory), filePrefix+System.currentTimeMillis());
 		walletKit_1.startAsync();
 		walletKit_1.awaitRunning();
 		
@@ -77,11 +77,11 @@ public class HDWalletKitTest {
         
         List<DeterministicKeyChain> chain = new ArrayList<DeterministicKeyChain>();
         chain.add(walletKit_1.wallet().getActiveKeychain());
-        walletKit_2 = new HDWalletKit(params, new File(testDirectory), filePrefix+System.currentTimeMillis(), 2, 2, true);
+        walletKit_2 = new HDWalletKit(params, new File(testDirectory), filePrefix+System.currentTimeMillis());
 		walletKit_2.startAsync();
 		walletKit_2.awaitRunning();
 		
-		assertTrue(walletKit_2.getSigners().size() == 2);
+		assertTrue(walletKit_2.getSigners().size() == 1);
 		
 		walletKit_1.wallet().toString();
 		System.out.println("------------------------------------------------------------");

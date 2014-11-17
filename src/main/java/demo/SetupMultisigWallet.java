@@ -9,6 +9,7 @@ import java.util.Scanner;
 
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Wallet;
+import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
@@ -30,9 +31,22 @@ public class SetupMultisigWallet {
 		WalletController controller1 = new WalletController(params);
 		WalletController controller2 = new WalletController(params);
 		
-		controller1.setupWalletKit(null, "demoWallet/", 2, 2);
-		Wallet wallet1 = controller1.getWallet();
+		DeterministicSeed nullSeed = null;
+		controller1.setupWalletKit(nullSeed, "demoWallet/");
+		controller2.setupWalletKit(nullSeed, "demoWallet/");
 		
+		Wallet wallet1 = controller1.getWallet();
+		Wallet wallet2 = controller2.getWallet();
+		
+		DeterministicKey follower_for_wallet1 = wallet1.getWatchingKey();
+		DeterministicKey follower_for_wallet2 = wallet2.getWatchingKey();
+		System.out.println("---------------------------------------------------");
+		System.out.println("Wallet1: " + follower_for_wallet1);
+		System.out.println("Wallet2: " + follower_for_wallet2);
+		System.out.println("---------------------------------------------------");
+		
+		controller1.addMarriedWallet(follower_for_wallet2);
+		controller2.addMarriedWallet(follower_for_wallet1);
 		
 		System.out.println("---------------------------------------------------");
 		System.out.println("Send coins to: " + controller1.getRecieveAddress(true));
@@ -40,15 +54,6 @@ public class SetupMultisigWallet {
         System.out.println("Hit enter when you have sent testCoins from a faucet");
         String token = in.nextLine();
 		
-        List<DeterministicKeyChain> followingKeyChains = new ArrayList<DeterministicKeyChain>();
-        
-        
-        followingKeyChains.add(controller1.getWallet().getActiveKeychain());
-        
-        List<DeterministicKeyChain> seedChains = controller1.getFollowingKeyChains();
-        
-        controller2.setupWalletKit(seedChains.get(0).getSeed(), "demoWallet/", 2, followingKeyChains);
-        
 		
 		System.out.println("---------------------------------------------------");
 //		System.out.println("Enter password to encrypt demoWallet: ");

@@ -64,30 +64,25 @@ public class WalletController {
 
     //An HD wallet kit with 1/1 signers is basically a regular wallet
 	public void setupWalletKit(@Nullable DeterministicSeed seed, String walletDirectory) {
-		setupWalletKit(seed, walletDirectory, 1, 1);
+		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), filePrefix);
+		if (seed != null) {
+			SPECIEBOX.restoreWalletFromSeed(seed);
+		}
+		startupWalletKit();
     }
 	
 	//An HD wallet kit with n/m signers and provided followingKeyChains
 	public void setupWalletKit(@Nullable DeterministicSeed seed, String walletDirectory, 
-			                   int threshold, List<DeterministicKeyChain> followingKeyChains) {
+			                   int threshold, List<DeterministicKey> followingKeys) {
 		// If seed is non-null it means we are restoring from backup.
-		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), filePrefix, threshold, true, followingKeyChains);
+		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), filePrefix, threshold, true, followingKeys);
 		if (seed != null) {
 			SPECIEBOX.restoreWalletFromSeed(seed);
 		}
 		startupWalletKit();
     }
 	
-	public void setupWalletKit(@Nullable DeterministicSeed seed, String walletDirectory, int threshold, int keys) {
-		// If seed is non-null it means we are restoring from backup.
-		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), filePrefix, threshold, keys, true);
-		if (seed != null) {
-			SPECIEBOX.restoreWalletFromSeed(seed);
-		}
-		startupWalletKit();
-	}
-	
-	//reload a wallet with this
+	//reload a wallet with this. We elect to not reload from a mn-seed
 	public void setupWalletKit(String walletDirectory, String fileName) {
 		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), fileName);
 		System.out.println("Loading an HD wallet");
@@ -151,6 +146,14 @@ public class WalletController {
 		SPECIEBOX.wallet().addEventListener(listener);
 	}
 	
+	public void addFollowingWallet(DeterministicKey key){
+		SPECIEBOX.addPairedWallet(key, false);
+	}
+	
+	public void addMarriedWallet(DeterministicKey key){
+		SPECIEBOX.addPairedWallet(key, true);
+	}
+	
 	public Address getRecieveAddress(boolean isFreshAddress){
 		return SPECIEBOX.wallet().freshReceiveAddress();
 	}
@@ -161,11 +164,7 @@ public class WalletController {
 		return SPECIEBOX.wallet();
 	}
 	
-	public DeterministicKeyChain getActiveKeychain(){
-		return SPECIEBOX.wallet().getActiveKeychain();
-	}
-	
-	public List<DeterministicKeyChain> getFollowingKeyChains(){
+	public List<DeterministicKey> getFollowingKeys(){
 		return SPECIEBOX.getFollowingKeys();
 	}
 	
