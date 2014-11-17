@@ -217,7 +217,7 @@ public class WalletController {
 	public String toString(){
 		StringBuilder out = new StringBuilder();
 		out.append("This is a ");
-		out.append(SPECIEBOX.getThreshold());
+		out.append(SPECIEBOX.getSigners().size());
 		out.append("/n");
 		out.append("\n \n ------------------------------------------------ \n");
 		out.append(SPECIEBOX.wallet().toString());

@@ -24,9 +24,15 @@ public class DemoTransactionSigner extends CustomTransactionSigner {
         this.keyChain = keyChain;
     }
 
+    //The question to answer is Who am I? I have to find a way to get the signing key without relying on previous signer
     @Override
     protected SignatureAndKey getSignature(Sha256Hash sighash, List<ChildNumber> derivationPath) {
         ImmutableList<ChildNumber> keyPath = ImmutableList.copyOf(derivationPath);
+        System.out.println("Transaction Sighash: "+sighash.toString());
+        System.out.println("KeyPath: "+keyPath.get(0).toString());
+        System.out.println("child numer: "+keyPath.get(0).getI());
+        
+        System.out.println("Manual SIgning Here??");
         DeterministicKey key = keyChain.getKeyByPath(keyPath, true);
         return new SignatureAndKey(key.sign(sighash), key.getPubOnly());
     }
