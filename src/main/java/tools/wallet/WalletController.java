@@ -40,56 +40,42 @@ import tools.wallet.HDWalletKit;
 
 public class WalletController {
 	
-	private static String APP_NAME = "specie-wallet";
-	protected static HDWalletKit SPECIEBOX;
+	protected final HDWalletKit SPECIEBOX;
 	private static final String DATE_FORMAT_NOW = "yyyyMMdd_HHmmss.SSS";
 	private String filePrefix;
 	private NetworkParameters params;
+	private String name = "SpecieWallet";
 	
 	public boolean isEncrypted;
     
-    public WalletController(NetworkParameters params){
+    public WalletController(NetworkParameters params, String walletDirectory, int threshold){
+    	// Determine what network params we are going to handle
+    	this(params, walletDirectory, "specie-wallet_" + now(), threshold);
+    }
+    
+    public WalletController(NetworkParameters params, String walletDirectory, String fileName, int threshold){
     	this.params = params;
     	this.isEncrypted = false;
-    	// Determine what network params we are going to handle
-    	String timestamp = now();
-		if (params.equals(TestNet3Params.get())) {
-		    this.filePrefix = APP_NAME + "-testnet_" + timestamp;
-		} else if (params.equals(RegTestParams.get())) {
-			this.filePrefix = APP_NAME + "-regtest_" + timestamp;
-		} else {
-			this.filePrefix = APP_NAME + "_" + timestamp;
-		}
+    	this.filePrefix = fileName;
+		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), fileName, threshold);
+    }
+    
+    public WalletController(NetworkParameters params, String walletDirectory, int threshold, List<DeterministicKey> followingKeys){
+    	this.params = params;
+    	this.isEncrypted = false;
+    	this.filePrefix = "specie-wallet_" + now();
+    	SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), filePrefix, threshold, true, followingKeys);
     }
 
     //An HD wallet kit with 1/1 signers is basically a regular wallet
-	public void setupWalletKit(@Nullable DeterministicSeed seed, String walletDirectory) {
-		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), filePrefix, 1);
+	public void setupWalletKit(@Nullable DeterministicSeed seed) {
 		if (seed != null) {
 			SPECIEBOX.restoreWalletFromSeed(seed);
 		}
-		startupWalletKit();
+		startupWalletKit(filePrefix);
     }
 	
-	//An HD wallet kit with n/m signers and provided followingKeyChains
-	public void setupWalletKit(@Nullable DeterministicSeed seed, String walletDirectory, 
-			                   int threshold, List<DeterministicKey> followingKeys) {
-		// If seed is non-null it means we are restoring from backup.
-		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), filePrefix, threshold, true, followingKeys);
-		if (seed != null) {
-			SPECIEBOX.restoreWalletFromSeed(seed);
-		}
-		startupWalletKit();
-    }
-	
-	//reload a wallet with this. We elect to not reload from a mn-seed
-	public void setupWalletKit(String walletDirectory, String fileName) {
-		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), fileName, 1);
-		System.out.println("Loading an HD wallet");
-		startupWalletKit();
-    }
-	
-	private void startupWalletKit(){
+	private void startupWalletKit(String fileName){
 		SPECIEBOX.setAutoSave(true);
         // Download the block chain and wait until it's done.
         SPECIEBOX.startAsync();
@@ -97,6 +83,8 @@ public class WalletController {
         
         WalletListener wListener = new WalletListener();
         SPECIEBOX.wallet().addEventListener(wListener);
+        this.name = fileName;
+        SPECIEBOX.wallet().setDescription(fileName+"_Fresh Wallet");
 	}
 	
 	public void shutdown(){
@@ -166,6 +154,15 @@ public class WalletController {
 	
 	public List<DeterministicKey> getFollowingKeys(){
 		return SPECIEBOX.getFollowingKeys();
+	}
+	
+	public String getName(){
+		return this.name;
+	}
+	
+	public void setname(String name){
+		SPECIEBOX.wallet().setDescription(name);
+		this.name = name;
 	}
 	
 	public static String now() {
@@ -256,7 +253,7 @@ public void onReorganize(Wallet wallet) {
 
 @Override
 public void onWalletChanged(Wallet wallet) {
-	System.out.println("wallet changed");
+	System.out.println("wallet "+wallet.getDescription()+" changed");
 	System.out.println("last seen block at: " + wallet.getLastBlockSeenTime());
 	System.out.println("balance: "+ wallet.getBalance());
 }

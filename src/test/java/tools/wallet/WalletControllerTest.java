@@ -29,7 +29,6 @@ public class WalletControllerTest {
 	@Before
 	public void setUp() throws Exception {
 		params = TestNet3Params.get();
-		controller = new WalletController(params);
 	}
 	
 	@After
@@ -48,7 +47,8 @@ public class WalletControllerTest {
 	
 	//@Test
 	public void testLoadWalletFromFileUnencrypted() throws IOException, UnreadableWalletException {
-		controller.setupWalletKit(testWalletDirectory, "specie-wallet-testnet");
+		controller = new WalletController(params, testWalletDirectory, "specie-wallet-testnet", 1);
+		controller.setupWalletKit(null);
 		
         assertNotNull(controller.getRecieveAddress(true));
         System.out.println(controller.toString());
@@ -58,8 +58,8 @@ public class WalletControllerTest {
 	
 	@Test
 	public void testEncryptAndDecryptWallet(){
-		DeterministicSeed nullSeed = null;
-		controller.setupWalletKit(nullSeed, testDirectory);
+		controller = new WalletController(params, testDirectory, 1);
+		controller.setupWalletKit(null);
 		String password = "specieBoxFinalProject";
 		controller.encryptWallet("specieBoxFinalProject");
 		assertTrue(controller.isEncrypted);
@@ -71,8 +71,8 @@ public class WalletControllerTest {
 	
 	//@Test
 	public void testSaveWalletSeedShouldSaveWalletToDiskAndReloadItFromMSeed() throws IOException, UnreadableWalletException {
-		DeterministicSeed nullSeed = null;
-		controller.setupWalletKit(nullSeed, testDirectory);
+		controller = new WalletController(params, testDirectory, 1);
+		controller.setupWalletKit(null);
 		
         assertNotNull(controller.getRecieveAddress(false));
         //then save a new wallet file. this one is unencrypted!
@@ -87,8 +87,8 @@ public class WalletControllerTest {
         
         DeterministicSeed seed = new DeterministicSeed(seedcode, null, passphrase, creationtime);
 
-		WalletController loadedController = new WalletController(params);
-		loadedController.setupWalletKit(seed, testDirectory);
+		WalletController loadedController = new WalletController(params, testDirectory, 1);
+		loadedController.setupWalletKit(seed);
 		loadedController.getWallet().toString();
         
 		assertEquals(controller.getWallet().getWatchingKey(), loadedController.getWallet().getWatchingKey());
@@ -100,7 +100,7 @@ public class WalletControllerTest {
 	//@Test
 	public void testSendFakeCoins() throws AddressFormatException {
 		DeterministicSeed nullSeed = null;
-		controller.setupWalletKit(nullSeed, testDirectory);
+		controller.setupWalletKit(nullSeed);
 		
 		// To test everything we create and print a fresh receiving address. 
 		// Send some coins to "TP's TestNet Faucet" return wallet.

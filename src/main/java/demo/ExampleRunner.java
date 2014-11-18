@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import org.bitcoinj.core.Address;
@@ -27,27 +30,31 @@ public class ExampleRunner {
 //	private static TestKey key = new TestKey(UUID.getBytes());
 //	private static User user = new User(UUID);
 	private static String testDirectory = "testFiles/";
-	private static WalletController controller = new WalletController(TestNet3Params.get());
+	private static List<WalletController> controllers = new ArrayList<WalletController>();
+	private static Scanner in = new Scanner(System.in);
 	
 	public static void main(String[] args) {
 //		boolean loggedIn = login();
 		String cmd = "cmd";
 		while (!cmd.isEmpty()){
-			Scanner in = new Scanner(System.in);
 			System.out.println("enter command [load/save/balance/spend/smslogin/print/quit]");
 			cmd = in.nextLine();
 			if(cmd.equals("load")){
 				System.out.println("enter filename: ");
-				controller.setupWalletKit("demoWallet/", in.nextLine());
+				String fileName = in.nextLine();
+				System.out.println("enter predetermined_threshold: ");
+				int threshold = Integer.parseInt(in.nextLine());
+				WalletController controller = new WalletController(TestNet3Params.get(), "demoWallet/", fileName, threshold);
+				controller.setupWalletKit(null);
+				
+				fileName = in.nextLine();
+				controllers.add(controller);
 				System.out.println("loaded wallet successfully");
 			} 
-			
-			else if(cmd.equals("seed")){
-				System.out.println("enter filename: ");
-				loadDemoWallet(in.nextLine());
-			} 
-			
 			else if(cmd.equals("spend")){
+				System.out.println("enter wallet_ID: ");
+				String id = in.nextLine();
+				WalletController controller = controllers.get(Integer.parseInt(id));
 				try {
 					System.out.println("enter address to send to: ");
 					String stringAddr = in.nextLine();
@@ -63,6 +70,9 @@ public class ExampleRunner {
 			} 
 			
 			else if(cmd.equals("balance")){
+				System.out.println("enter wallet_ID: ");
+				String id = in.nextLine();
+				WalletController controller = controllers.get(Integer.parseInt(id));;
 				System.out.println(controller.getBalance().toFriendlyString());
 			}
 			
@@ -76,6 +86,9 @@ public class ExampleRunner {
 			} 
 			
 			else if (cmd.equals("print")) {
+				System.out.println("enter wallet_ID: ");
+				String id = in.nextLine();
+				WalletController controller = controllers.get(Integer.parseInt(id));
 				System.out.println(controller.toString());
 			} 
 			
@@ -84,35 +97,17 @@ public class ExampleRunner {
 			}
 		}
         
-		controller.shutdown();
+		for(WalletController controller:controllers){
+			controller.shutdown();
+		}
 		System.out.println("shutdown complete");
 	}
 
 	private static void save(String walletFile) {
-			controller.saveWalletSeed("demoWallet/" + walletFile);
-	}
-
-	private static void loadDemoWallet(String walletName) {
-		try {
-			String seedCode = readFile("demoWallet/mnemonic_seed.sbx");
-			System.out.println(seedCode);
-			String passphrase = "";
-	        Long creationtime = System.currentTimeMillis();
-
-	        DeterministicSeed seed = new DeterministicSeed(seedCode, null, passphrase, creationtime);
-			//Loading wallet from seed
-			controller.setupWalletKit(seed, "demoWallet/");
-			
-			Wallet wallet = controller.getWallet();
-			wallet.allowSpendingUnconfirmedTransactions();
-			System.out.println(wallet.toString());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnreadableWalletException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		System.out.println("enter wallet_ID: ");
+		String id = in.nextLine();
+		WalletController controller = controllers.get(Integer.parseInt(id));
+		controller.saveWalletSeed("demoWallet/" + walletFile);
 	}
 
 	static String readFile(String path) throws IOException {

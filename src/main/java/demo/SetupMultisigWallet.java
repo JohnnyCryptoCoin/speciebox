@@ -26,23 +26,25 @@ public class SetupMultisigWallet {
 	public static void main(String[] args) {
 		Scanner in = new Scanner(System.in);
 		String classpath = "demoWallet/";
+		DeterministicSeed nullSeed = null;
 		
 		NetworkParameters params = TestNet3Params.get();
-		WalletController controller1 = new WalletController(params);
-		WalletController controller2 = new WalletController(params);
-		
-		DeterministicSeed nullSeed = null;
-		controller1.setupWalletKit(nullSeed, "demoWallet/");
-		controller2.setupWalletKit(nullSeed, "demoWallet/");
-		
+		WalletController controller1 = new WalletController(params, classpath, "DemoWallet_1", 2);
+		controller1.setupWalletKit(nullSeed);
 		Wallet wallet1 = controller1.getWallet();
-		Wallet wallet2 = controller2.getWallet();
-		
 		DeterministicKey follower_for_wallet1 = wallet1.getWatchingKey();
+		
+		WalletController controller2 = new WalletController(params, classpath, "DemoWallet_2", 2);
+		controller2.setupWalletKit(nullSeed);
+		Wallet wallet2 = controller2.getWallet();
 		DeterministicKey follower_for_wallet2 = wallet2.getWatchingKey();
+		
 		System.out.println("---------------------------------------------------");
-		System.out.println("Wallet1: " + follower_for_wallet1);
+		System.out.println("Wallet1 WatchingKey: " + follower_for_wallet1);
+		System.out.println("Wallet1 B58Key: " + DeterministicKey.deserializeB58(null, follower_for_wallet1.serializePubB58()));
+		
 		System.out.println("Wallet2: " + follower_for_wallet2);
+		System.out.println("Wallet2 B58Key: " + DeterministicKey.deserializeB58(null, follower_for_wallet2.serializePubB58()));
 		System.out.println("---------------------------------------------------");
 		
 		controller1.addMarriedWallet(follower_for_wallet2);
@@ -50,7 +52,6 @@ public class SetupMultisigWallet {
 		
 		System.out.println("---------------------------------------------------");
 		System.out.println("Send coins to: " + controller1.getRecieveAddress(true));
-		
         System.out.println("Hit enter when you have sent testCoins from a faucet");
         String token = in.nextLine();
 		
@@ -65,9 +66,6 @@ public class SetupMultisigWallet {
 		System.out.println("Hit enter when you have sent testCoins from a faucet");
         token = in.nextLine();
 		
-		System.out.println(controller1.toString());
-		System.out.println(controller2.toString());
-
         controller1.shutdown();
         controller2.shutdown();
 	}

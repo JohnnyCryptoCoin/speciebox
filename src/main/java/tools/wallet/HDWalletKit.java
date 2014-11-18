@@ -104,7 +104,7 @@ public class HDWalletKit extends WalletAppKit {
     }
     
     public void addPairedWallet (DeterministicKey watchKey, boolean increaseThreshold){
-    	System.out.println("This "+currentSigners+"/"+(followingKeys.size()+1)+" wallet");
+    	System.out.print(wallet().getDescription()+", a "+currentSigners+"/"+(followingKeys.size()+1)+" wallet... ");
     	
     	followingKeys.add(watchKey);
 		if(increaseThreshold && currentSigners < walletThreshold){

@@ -26,9 +26,11 @@ public class SetupDemoWallet {
 		String classpath = "demoWallet/";
 		
 		NetworkParameters params = TestNet3Params.get();
-		WalletController controller = new WalletController(params);
-		DeterministicSeed nullSeed = null;
-		controller.setupWalletKit(nullSeed, "demoWallet/");
+		System.out.println("How many signers will this wallet have??");
+		String threshold = in.nextLine();
+		
+		WalletController controller = new WalletController(params, classpath, "DemoWallet_"+threshold, Integer.parseInt(threshold));
+		controller.setupWalletKit(null);
 		Wallet wallet = controller.getWallet();
 		
 		System.out.println(wallet.toString());
@@ -47,7 +49,7 @@ public class SetupDemoWallet {
 //		wallet.encrypt(password);
         System.out.println("Demo wallet ID");
         token = in.nextLine();
-        controller.saveWallet(classpath+"DemoWallet"+token);
+        controller.saveWallet(classpath+"DemoWallet_n:"+threshold);
         controller.shutdown();
 	}
 	
