@@ -83,8 +83,7 @@ public class WalletController {
         
         WalletListener wListener = new WalletListener();
         SPECIEBOX.wallet().addEventListener(wListener);
-        this.name = fileName;
-        SPECIEBOX.wallet().setDescription(fileName+"_Fresh Wallet");
+        setName(fileName+"_Fresh Wallet");
 	}
 	
 	public void shutdown(){
@@ -134,12 +133,12 @@ public class WalletController {
 		SPECIEBOX.wallet().addEventListener(listener);
 	}
 	
-	public void addFollowingWallet(DeterministicKey key){
-		SPECIEBOX.addPairedWallet(key, false);
+	public void addFollowingWallet(String description, DeterministicKey key){
+		SPECIEBOX.addPairedWallet(description, key, false);
 	}
 	
-	public void addMarriedWallet(DeterministicKey key){
-		SPECIEBOX.addPairedWallet(key, true);
+	public void addMarriedWallet(String description, DeterministicKey key){
+		SPECIEBOX.addPairedWallet(description, key, true);
 	}
 	
 	public Address getRecieveAddress(boolean isFreshAddress){
@@ -160,7 +159,7 @@ public class WalletController {
 		return this.name;
 	}
 	
-	public void setname(String name){
+	public void setName(String name){
 		SPECIEBOX.wallet().setDescription(name);
 		this.name = name;
 	}

@@ -47,7 +47,6 @@ public class ExampleRunner {
 				WalletController controller = new WalletController(TestNet3Params.get(), "demoWallet/", fileName, threshold);
 				controller.setupWalletKit(null);
 				
-				fileName = in.nextLine();
 				controllers.add(controller);
 				System.out.println("loaded wallet successfully");
 			} 

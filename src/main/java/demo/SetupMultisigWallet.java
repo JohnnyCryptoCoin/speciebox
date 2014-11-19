@@ -33,22 +33,19 @@ public class SetupMultisigWallet {
 		controller1.setupWalletKit(nullSeed);
 		Wallet wallet1 = controller1.getWallet();
 		DeterministicKey follower_for_wallet1 = wallet1.getWatchingKey();
+		System.out.println("---------------------------------------------------");
 		
 		WalletController controller2 = new WalletController(params, classpath, "DemoWallet_2", 2);
 		controller2.setupWalletKit(nullSeed);
 		Wallet wallet2 = controller2.getWallet();
 		DeterministicKey follower_for_wallet2 = wallet2.getWatchingKey();
-		
 		System.out.println("---------------------------------------------------");
-		System.out.println("Wallet1 WatchingKey: " + follower_for_wallet1);
-		System.out.println("Wallet1 B58Key: " + DeterministicKey.deserializeB58(null, follower_for_wallet1.serializePubB58()));
+
+		controller1.setName("Wallet_1");
+		controller2.setName("Wallet_2");
 		
-		System.out.println("Wallet2: " + follower_for_wallet2);
-		System.out.println("Wallet2 B58Key: " + DeterministicKey.deserializeB58(null, follower_for_wallet2.serializePubB58()));
-		System.out.println("---------------------------------------------------");
-		
-		controller1.addMarriedWallet(follower_for_wallet2);
-		controller2.addMarriedWallet(follower_for_wallet1);
+		controller1.addMarriedWallet(controller2.getName(), follower_for_wallet2);
+		controller2.addMarriedWallet(controller1.getName(), follower_for_wallet1);
 		
 		System.out.println("---------------------------------------------------");
 		System.out.println("Send coins to: " + controller1.getRecieveAddress(true));
@@ -66,6 +63,9 @@ public class SetupMultisigWallet {
 		System.out.println("Hit enter when you have sent testCoins from a faucet");
         token = in.nextLine();
 		
+        controller1.saveWallet("DemoWallet_1");
+        controller2.saveWallet("DemoWallet_2");
+        
         controller1.shutdown();
         controller2.shutdown();
 	}

@@ -32,7 +32,7 @@ public class HDWalletKitTest {
 	//These are wonderful tools provided by bitcoinj for this very purpose
 	private NetworkParameters params = TestNet3Params.get();
 
-	@Test
+	//@Test
 	public void testSetupHDWalletandReload() throws Exception{
 		String name = filePrefix+System.currentTimeMillis();
 		File dir = new File(testDirectory);
@@ -76,7 +76,7 @@ public class HDWalletKitTest {
         DeterministicKeyChain chain = new DeterministicKeyChain(random);
         
         
-        walletKit_1.addPairedWallet(chain.getWatchingKey(), true);
+        walletKit_1.addPairedWallet("description", chain.getWatchingKey(), true);
         assertTrue(walletKit_1.getSigners().size() == 2);
 		walletKit_1.stopAsync();
 		walletKit_1.awaitTerminated();

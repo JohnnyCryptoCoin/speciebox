@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Watchable;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -103,13 +104,14 @@ public class HDWalletKit extends WalletAppKit {
         return this;
     }
     
-    public void addPairedWallet (DeterministicKey watchKey, boolean increaseThreshold){
+    public void addPairedWallet (String description, DeterministicKey watchKey, boolean increaseThreshold){
     	System.out.print(wallet().getDescription()+", a "+currentSigners+"/"+(followingKeys.size()+1)+" wallet... ");
     	
     	followingKeys.add(watchKey);
 		if(increaseThreshold && currentSigners < walletThreshold){
 			currentSigners++;
-			this.wallet().addTransactionSigner(new DemoTransactionSigner(watchKey));
+			System.out.println("watchKey: " + watchKey);
+			this.wallet().addTransactionSigner(new DemoTransactionSigner(watchKey, description));
 		}
 	
 		//We can leverage addAndActivateHDChain 
@@ -161,7 +163,7 @@ public class HDWalletKit extends WalletAppKit {
     			DeterministicKey partnerKey = DeterministicKey.deserializeB58(null, dKey.serializePubB58());
     			followingB58Keys.add(partnerKey);
     			if(addSigners && i < walletThreshold - 1){
-    				this.wallet().addTransactionSigner(new DemoTransactionSigner(dKey));
+    				this.wallet().addTransactionSigner(new DemoTransactionSigner(dKey, null));
     				i++;
     			}
     		}
