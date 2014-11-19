@@ -33,12 +33,14 @@ public class SetupMultisigWallet {
 		controller1.setupWalletKit(nullSeed);
 		Wallet wallet1 = controller1.getWallet();
 		DeterministicKey follower_for_wallet1 = wallet1.getWatchingKey();
+		System.out.println(follower_for_wallet1.toString());
 		System.out.println("---------------------------------------------------");
 		
 		WalletController controller2 = new WalletController(params, classpath, "DemoWallet_2", 2);
 		controller2.setupWalletKit(nullSeed);
 		Wallet wallet2 = controller2.getWallet();
 		DeterministicKey follower_for_wallet2 = wallet2.getWatchingKey();
+		System.out.println(follower_for_wallet2.toString());
 		System.out.println("---------------------------------------------------");
 
 		controller1.setName("Wallet_1");
@@ -63,6 +65,8 @@ public class SetupMultisigWallet {
 		System.out.println("Hit enter when you have sent testCoins from a faucet");
         token = in.nextLine();
 		
+        System.out.println("Wallet_1" + controller1.printTransactionSigners(wallet1.getTransactionSigners()));
+        System.out.println("Wallet_2" + controller2.printTransactionSigners(wallet2.getTransactionSigners()));
         controller1.saveWallet("DemoWallet_1");
         controller2.saveWallet("DemoWallet_2");
         

@@ -28,6 +28,7 @@ import org.bitcoinj.crypto.KeyCrypterScrypt;
 import org.bitcoinj.params.RegTestParams;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.script.Script;
+import org.bitcoinj.signers.TransactionSigner;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
 
@@ -211,11 +212,20 @@ public class WalletController {
 	@Override
 	public String toString(){
 		StringBuilder out = new StringBuilder();
-		out.append("This is a ");
-		out.append(SPECIEBOX.getSigners().size());
-		out.append("/n");
+		out.append("This is a ").append(SPECIEBOX.getSigners().size()).append("/").append(SPECIEBOX.getFollowingKeys().size()).append(" Wallet. \n");
+		
+		out.append(printTransactionSigners(SPECIEBOX.getSigners()));
 		out.append("\n \n ------------------------------------------------ \n");
 		out.append(SPECIEBOX.wallet().toString());
+		return out.toString();
+	}
+
+	public String printTransactionSigners(List<TransactionSigner> signers) {
+		StringBuilder out = new StringBuilder();
+		out.append("TransactionSigner Info: \n");
+		for (TransactionSigner signer : signers){
+			out.append("    -").append(signer.toString()).append("\n");
+		}
 		return out.toString();
 	}
 
