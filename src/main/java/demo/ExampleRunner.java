@@ -39,7 +39,7 @@ public class ExampleRunner {
 //		boolean loggedIn = login();
 		String cmd = "cmd";
 		while (cmd != "quit"){
-			System.out.println("enter command [load/save/balance/spend/smslogin/print/quit]");
+			System.out.println("enter command [setup/load/save/balance/spend/smslogin/print/quit]");
 			cmd = in.nextLine();
 			if(cmd.equals("load")){
 				System.out.println("enter filename: ");
