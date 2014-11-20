@@ -8,6 +8,7 @@ import org.bitcoinj.wallet.DeterministicKeyChain;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
+import java.util.Scanner;
 
 
 //Transaction signer which uses provided keychain to get signing keys from. It relies on previous signer to provide
@@ -48,20 +49,19 @@ public class DemoTransactionSigner extends CustomTransactionSigner {
     @Override
     protected SignatureAndKey getSignature(Sha256Hash sighash, List<ChildNumber> derivationPath) {
         ImmutableList<ChildNumber> keyPath = ImmutableList.copyOf(derivationPath);
-        System.out.println("TransactionSigner: " + description);
-        System.out.println("KeyPath 0 : "+keyPath.get(0).toString());
         System.out.println("child numer: "+keyPath.get(0).getI());
-        System.out.println("getKeyByPath f: " + keyChain.getKeyByPath(keyPath, false));
         System.out.println("getKeyByPath t: " + keyChain.getKeyByPath(keyPath, true));
         
-        if (watchingKey == null){
-        	System.out.println("We will now sign " + sighash.toString() + "with watchingKey for: " + description);
-        	// sign with the watchingKey made on startup
-        	return new SignatureAndKey(watchingKey.sign(sighash), watchingKey.getPubOnly());
+    	//Dummy check. We will base our accept/reject criteria off of this.
+        System.out.println("TransactionSigner: " + description + ", do you want to sign this transaxtion? [y/n]");
+        Scanner in = new Scanner(System.in);
+        String sign = in.nextLine();
+        
+        if(in.equals("y") || in.equals("yes")){
+	    	DeterministicKey key = keyChain.getKeyByPath(keyPath, true);
+	    	return new SignatureAndKey(key.sign(sighash), key.getPubOnly());
         } else {
-        	System.out.println("Manual Signing Here??");
-        	DeterministicKey key = keyChain.getKeyByPath(keyPath, true);
-        	return new SignatureAndKey(key.sign(sighash), key.getPubOnly());
+        	return new SignatureAndKey(watchingKey.sign(sighash), watchingKey.getPubOnly());
         }
     }
     
