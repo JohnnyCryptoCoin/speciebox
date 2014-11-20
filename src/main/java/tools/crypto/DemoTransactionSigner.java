@@ -54,7 +54,7 @@ public class DemoTransactionSigner extends CustomTransactionSigner {
         System.out.println("getKeyByPath f: " + keyChain.getKeyByPath(keyPath, false));
         System.out.println("getKeyByPath t: " + keyChain.getKeyByPath(keyPath, true));
         
-        if (watchingKey != null){
+        if (watchingKey == null){
         	System.out.println("We will now sign " + sighash.toString() + "with watchingKey for: " + description);
         	// sign with the watchingKey made on startup
         	return new SignatureAndKey(watchingKey.sign(sighash), watchingKey.getPubOnly());
