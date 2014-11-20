@@ -49,9 +49,10 @@ public class DemoTransactionSigner extends CustomTransactionSigner {
     protected SignatureAndKey getSignature(Sha256Hash sighash, List<ChildNumber> derivationPath) {
         ImmutableList<ChildNumber> keyPath = ImmutableList.copyOf(derivationPath);
         System.out.println("TransactionSigner: " + description);
-        System.out.println("KeyPath: "+keyPath.get(0).toString());
+        System.out.println("KeyPath 0 : "+keyPath.get(0).toString());
         System.out.println("child numer: "+keyPath.get(0).getI());
-        System.out.println(watchingKey);
+        System.out.println("getKeyByPath f: " + keyChain.getKeyByPath(keyPath, false));
+        System.out.println("getKeyByPath t: " + keyChain.getKeyByPath(keyPath, true));
         
         if (watchingKey != null){
         	System.out.println("We will now sign " + sighash.toString() + "with watchingKey for: " + description);

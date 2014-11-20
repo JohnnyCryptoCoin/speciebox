@@ -216,7 +216,7 @@ public class WalletController {
 		
 		out.append(printTransactionSigners(SPECIEBOX.getSigners()));
 		out.append("\n \n ------------------------------------------------ \n");
-		out.append(SPECIEBOX.wallet().toString());
+		out.append(SPECIEBOX.wallet().toString(true, true, true, null));
 		return out.toString();
 	}
 

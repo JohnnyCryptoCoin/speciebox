@@ -10,21 +10,18 @@
 	   <finalName>java-web-sample</finalName>
 	</build>
 	
-	<properties>
-	   <slf4jVersion>1.6.1</slf4jVersion>
-	</properties>
 	
 	<dependencies>
 		<!-- slf4j and log4j binding -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>${slf4jVersion}</version>
+			<version>1.7.7</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>slf4j-log4j12</artifactId>
-		    <version>${slf4jVersion}</version>
+		    <version>1.7.7</version>
 		</dependency>
 		<dependency>
 		    <groupId>log4j</groupId>
@@ -70,5 +67,6 @@
 			<artifactId>twilio-java-sdk</artifactId>
 			<version>3.4.5</version>
 		</dependency>
-	</dependencies>    
+	</dependencies>
+	
 </project>

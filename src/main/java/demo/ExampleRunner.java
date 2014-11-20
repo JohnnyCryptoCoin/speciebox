@@ -39,7 +39,7 @@ public class ExampleRunner {
 	public static void main(String[] args) {
 //		boolean loggedIn = login();
 		String cmd = "cmd";
-		while (cmd != "quit"){
+		while (!cmd.equals("quit")){
 			System.out.println("enter command [setup/load/save/balance/spend/smslogin/print/quit]");
 			cmd = in.nextLine();
 			if(cmd.equals("load")){
@@ -139,11 +139,7 @@ public class ExampleRunner {
         System.out.println("Hit enter when you have sent testCoins from a faucet");
         String token = in.nextLine();
 		
-		
 		System.out.println("---------------------------------------------------");
-//		System.out.println("Enter password to encrypt demoWallet: ");
-//      String password = in.nextLine();
-//		wallet.encrypt(password);
 		
 		System.out.println("---------------------------------------------------");
 		System.out.println("Send coins to: " + controller2.getRecieveAddress(true));
