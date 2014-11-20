@@ -110,7 +110,6 @@ public class HDWalletKit extends WalletAppKit {
     	followingKeys.add(watchKey);
 		if(increaseThreshold && currentSigners < walletThreshold){
 			currentSigners++;
-			System.out.println("watchKey: " + watchKey);
 			this.wallet().addTransactionSigner(new DemoTransactionSigner(watchKey, description));
 		}
 	

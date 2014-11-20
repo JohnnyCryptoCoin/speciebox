@@ -212,7 +212,7 @@ public class WalletController {
 	@Override
 	public String toString(){
 		StringBuilder out = new StringBuilder();
-		out.append("This is a ").append(SPECIEBOX.getSigners().size()).append("/").append(SPECIEBOX.getFollowingKeys().size()).append(" Wallet. \n");
+		out.append("This is a ").append(SPECIEBOX.getSigners().size()).append("/").append(SPECIEBOX.getFollowingKeys().size()+1).append(" Wallet. \n");
 		
 		out.append(printTransactionSigners(SPECIEBOX.getSigners()));
 		out.append("\n \n ------------------------------------------------ \n");

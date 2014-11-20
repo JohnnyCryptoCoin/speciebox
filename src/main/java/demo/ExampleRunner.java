@@ -13,7 +13,9 @@ import java.util.Scanner;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.AddressFormatException;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Wallet;
+import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.store.UnreadableWalletException;
 import org.bitcoinj.wallet.DeterministicSeed;
@@ -36,7 +38,7 @@ public class ExampleRunner {
 	public static void main(String[] args) {
 //		boolean loggedIn = login();
 		String cmd = "cmd";
-		while (!cmd.isEmpty()){
+		while (cmd != "quit"){
 			System.out.println("enter command [load/save/balance/spend/smslogin/print/quit]");
 			cmd = in.nextLine();
 			if(cmd.equals("load")){
@@ -63,7 +65,7 @@ public class ExampleRunner {
 					String stringVal = in.nextLine();
 					Coin value = Coin.parseCoin(stringVal);
 					controller.sendCoins(toAddress, value, false);
-				} catch (AddressFormatException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			} 
@@ -91,8 +93,12 @@ public class ExampleRunner {
 				System.out.println(controller.toString());
 			} 
 			
+			else if (cmd.equals("setup")) {
+				setupMarriedWallets();
+			} 
+			
 			else {
-				cmd = "";
+				System.out.println("I can't do that Dave...");
 			}
 		}
         
@@ -100,6 +106,56 @@ public class ExampleRunner {
 			controller.shutdown();
 		}
 		System.out.println("shutdown complete");
+	}
+
+	private static void setupMarriedWallets() {
+		String classpath = "demoWallet/";
+		DeterministicSeed nullSeed = null;
+		
+		NetworkParameters params = TestNet3Params.get();
+		WalletController controller1 = new WalletController(params, classpath, "DemoWallet_1", 2);
+		controller1.setupWalletKit(nullSeed);
+		Wallet wallet1 = controller1.getWallet();
+		DeterministicKey follower_for_wallet1 = wallet1.getWatchingKey();
+		System.out.println(follower_for_wallet1.toString());
+		System.out.println("---------------------------------------------------");
+		
+		WalletController controller2 = new WalletController(params, classpath, "DemoWallet_2", 2);
+		controller2.setupWalletKit(nullSeed);
+		Wallet wallet2 = controller2.getWallet();
+		DeterministicKey follower_for_wallet2 = wallet2.getWatchingKey();
+		System.out.println(follower_for_wallet2.toString());
+		System.out.println("---------------------------------------------------");
+
+		controller1.setName("Wallet_1");
+		controller2.setName("Wallet_2");
+		
+		controller1.addMarriedWallet(controller2.getName(), follower_for_wallet2);
+		controller2.addMarriedWallet(controller1.getName(), follower_for_wallet1);
+		
+		System.out.println("---------------------------------------------------");
+		System.out.println("Send coins to: " + controller1.getRecieveAddress(true));
+        System.out.println("Hit enter when you have sent testCoins from a faucet");
+        String token = in.nextLine();
+		
+		
+		System.out.println("---------------------------------------------------");
+//		System.out.println("Enter password to encrypt demoWallet: ");
+//      String password = in.nextLine();
+//		wallet.encrypt(password);
+		
+		System.out.println("---------------------------------------------------");
+		System.out.println("Send coins to: " + controller2.getRecieveAddress(true));
+		System.out.println("Hit enter when you have sent testCoins from a faucet");
+        token = in.nextLine();
+		
+        System.out.println("Wallet_1" + controller1.printTransactionSigners(wallet1.getTransactionSigners()));
+        System.out.println("Wallet_2" + controller2.printTransactionSigners(wallet2.getTransactionSigners()));
+        controller1.saveWallet("DemoWallet_1");
+        controller2.saveWallet("DemoWallet_2");
+        
+        controllers.add(controller1);
+        controllers.add(controller2);
 	}
 
 	private static void save(String walletFile) {
