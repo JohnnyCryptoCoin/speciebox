@@ -22,9 +22,16 @@ public class DemoTransactionSigner extends CustomTransactionSigner {
     public DemoTransactionSigner() {
     }
 
-    // Older style where we start up with a keychain. Not as desireable i think?
     public DemoTransactionSigner(DeterministicKeyChain keyChain) {
         this(keyChain.getWatchingKey(), keyChain, "SomeWallet's TSigner");
+    }
+    
+    public DemoTransactionSigner(DeterministicKey watchingKey) {
+        this(watchingKey, "SomeWallet's TSigner");
+    }
+    
+    public DemoTransactionSigner(DeterministicKeyChain keyChain, String description) {
+        this(keyChain.getWatchingKey(), keyChain, description);
     }
     
     public DemoTransactionSigner(DeterministicKey watchingKey, String description) {

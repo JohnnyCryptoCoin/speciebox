@@ -76,7 +76,7 @@ public class HDWalletKitTest {
         DeterministicKeyChain chain = new DeterministicKeyChain(random);
         
         
-        walletKit_1.addPairedWallet("description", chain.getWatchingKey(), true);
+        walletKit_1.addPairedWallet("description", chain, true);
         assertTrue(walletKit_1.getSigners().size() == 2);
 		walletKit_1.stopAsync();
 		walletKit_1.awaitTerminated();

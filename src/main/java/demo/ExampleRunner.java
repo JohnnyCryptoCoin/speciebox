@@ -18,6 +18,7 @@ import org.bitcoinj.core.Wallet;
 import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.store.UnreadableWalletException;
+import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
 
 import tools.wallet.WalletController;
@@ -116,14 +117,14 @@ public class ExampleRunner {
 		WalletController controller1 = new WalletController(params, classpath, "DemoWallet_1", 2);
 		controller1.setupWalletKit(nullSeed);
 		Wallet wallet1 = controller1.getWallet();
-		DeterministicKey follower_for_wallet1 = wallet1.getWatchingKey();
+		DeterministicKeyChain follower_for_wallet1 = wallet1.getActiveKeychain();
 		System.out.println(follower_for_wallet1.toString());
 		System.out.println("---------------------------------------------------");
 		
 		WalletController controller2 = new WalletController(params, classpath, "DemoWallet_2", 2);
 		controller2.setupWalletKit(nullSeed);
 		Wallet wallet2 = controller2.getWallet();
-		DeterministicKey follower_for_wallet2 = wallet2.getWatchingKey();
+		DeterministicKeyChain follower_for_wallet2 = wallet2.getActiveKeychain();
 		System.out.println(follower_for_wallet2.toString());
 		System.out.println("---------------------------------------------------");
 

@@ -104,21 +104,21 @@ public class HDWalletKit extends WalletAppKit {
         return this;
     }
     
-    public void addPairedWallet (String description, DeterministicKey watchKey, boolean increaseThreshold){
+    public void addPairedWallet (String description, DeterministicKeyChain chain, boolean increaseThreshold){
     	System.out.print(wallet().getDescription()+", a "+currentSigners+"/"+(followingKeys.size()+1)+" wallet... ");
     	
-    	followingKeys.add(watchKey);
+    	followingKeys.add(chain.getWatchingKey());
 		if(increaseThreshold && currentSigners < walletThreshold){
 			currentSigners++;
-			this.wallet().addTransactionSigner(new DemoTransactionSigner(watchKey, description));
+			this.wallet().addTransactionSigner(new DemoTransactionSigner(chain, description));
 		}
 	
 		//We can leverage addAndActivateHDChain 
-		MarriedKeyChain chain = MarriedKeyChain.builder()
+		MarriedKeyChain marriedChain = MarriedKeyChain.builder()
 				.random(new SecureRandom())
-				.followingKeys(DeterministicKey.deserializeB58(null, watchKey.serializePubB58()))
+				.followingKeys(DeterministicKey.deserializeB58(null, chain.getWatchingKey().serializePubB58()))
 				.threshold(walletThreshold).build();
-		this.wallet().addAndActivateHDChain(chain);
+		this.wallet().addAndActivateHDChain(marriedChain);
     	System.out.println("Is now a "+currentSigners+"/"+(followingKeys.size()+1)+" wallet");
     }
     

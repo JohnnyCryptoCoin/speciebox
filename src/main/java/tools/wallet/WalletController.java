@@ -134,12 +134,12 @@ public class WalletController {
 		SPECIEBOX.wallet().addEventListener(listener);
 	}
 	
-	public void addFollowingWallet(String description, DeterministicKey key){
-		SPECIEBOX.addPairedWallet(description, key, false);
+	public void addFollowingWallet(String description, DeterministicKeyChain chain){
+		SPECIEBOX.addPairedWallet(description, chain, false);
 	}
 	
-	public void addMarriedWallet(String description, DeterministicKey key){
-		SPECIEBOX.addPairedWallet(description, key, true);
+	public void addMarriedWallet(String description, DeterministicKeyChain chain){
+		SPECIEBOX.addPairedWallet(description, chain, true);
 	}
 	
 	public Address getRecieveAddress(boolean isFreshAddress){
