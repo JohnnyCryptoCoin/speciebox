@@ -56,7 +56,7 @@ public class WalletControllerTest {
         controller.shutdown();
 	}
 	
-	@Test
+//	@Test
 	public void testEncryptAndDecryptWallet(){
 		controller = new WalletController(params, testDirectory, 1);
 		controller.setupWalletKit(null);

@@ -12,7 +12,7 @@ import org.bitcoinj.store.SPVBlockStore;
 import org.bitcoinj.testing.KeyChainTransactionSigner;
 import org.bitcoinj.testing.TestWithWallet;
 import org.bitcoinj.wallet.DeterministicKeyChain;
-import org.bitcoinj.wallet.MarriedKeyChain;
+//import org.bitcoinj.wallet.MarriedKeyChain;
 
 import com.google.common.collect.Lists;
 
@@ -40,11 +40,11 @@ public class WalletTools extends TestWithWallet{
                 wallet.addTransactionSigner(new KeyChainTransactionSigner(keyChain));
         }
 
-        MarriedKeyChain chain = MarriedKeyChain.builder()
-                .random(new SecureRandom())
-                .followingKeys(followingKeys)
-                .threshold(threshold).build();
-        wallet.addAndActivateHDChain(chain);
+//        MarriedKeyChain chain = MarriedKeyChain.builder()
+//                .random(new SecureRandom())
+//                .followingKeys(followingKeys)
+//                .threshold(threshold).build();
+//        wallet.addAndActivateHDChain(chain);
     }
 
 }

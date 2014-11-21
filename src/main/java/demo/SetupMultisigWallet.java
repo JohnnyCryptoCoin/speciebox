@@ -8,12 +8,12 @@ import java.util.Scanner;
 
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Wallet;
+import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.params.TestNet3Params;
-import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
 
-import tools.wallet.WalletController;
-
+import tools.crypto.PluggableTransactionSigner;
+import tools.wallet.WalletController2;
 
 public class SetupMultisigWallet {
 	/**
@@ -28,25 +28,25 @@ public class SetupMultisigWallet {
 		DeterministicSeed nullSeed = null;
 		
 		NetworkParameters params = TestNet3Params.get();
-		WalletController controller1 = new WalletController(params, classpath, "DemoWallet_1", 2);
+		WalletController2 controller1 = new WalletController2(params, classpath, "DemoWallet_1", 2);
 		controller1.setupWalletKit(nullSeed);
 		Wallet wallet1 = controller1.getWallet();
-		DeterministicKeyChain follower_for_wallet1 = wallet1.getActiveKeychain();
+		DeterministicKey follower_for_wallet1 = wallet1.getWatchingKey();
 		System.out.println(follower_for_wallet1.toString());
 		System.out.println("---------------------------------------------------");
 		
-		WalletController controller2 = new WalletController(params, classpath, "DemoWallet_2", 2);
+		WalletController2 controller2 = new WalletController2(params, classpath, "DemoWallet_2", 2);
 		controller2.setupWalletKit(nullSeed);
 		Wallet wallet2 = controller2.getWallet();
-		DeterministicKeyChain follower_for_wallet2 = wallet2.getActiveKeychain();
+		DeterministicKey follower_for_wallet2 = wallet2.getWatchingKey();
 		System.out.println(follower_for_wallet2.toString());
 		System.out.println("---------------------------------------------------");
 
 		controller1.setName("Wallet_1");
 		controller2.setName("Wallet_2");
 		
-		controller1.addMarriedWallet(controller2.getName(), follower_for_wallet2);
-		controller2.addMarriedWallet(controller1.getName(), follower_for_wallet1);
+		controller1.addMarriedWallet(controller2.getName(), new PluggableTransactionSigner(follower_for_wallet2, "Signer for wallet 2"));
+		controller2.addMarriedWallet(controller1.getName(), new PluggableTransactionSigner(follower_for_wallet1, "Signer for wallet 1"));
 		
 		System.out.println("---------------------------------------------------");
 		System.out.println("Send coins to: " + controller1.getRecieveAddress(true));

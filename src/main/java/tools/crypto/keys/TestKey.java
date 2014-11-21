@@ -37,7 +37,6 @@ public class TestKey implements IKeyProvider {
     }
     
 
-	@Override
 	public String getHexString(byte[] bytes) {
 		char[] hexArray = "0123456789ABCDEF".toCharArray();
 		char[] hexChars = new char[bytes.length * 2];
@@ -49,7 +48,6 @@ public class TestKey implements IKeyProvider {
 	    return new String(hexChars);
 	}
 
-	@Override
 	public String getHexKey() {
 		return getHexString(KEY);
 	}

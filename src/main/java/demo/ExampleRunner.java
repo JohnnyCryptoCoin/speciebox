@@ -5,19 +5,14 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 
 import org.bitcoinj.core.Address;
-import org.bitcoinj.core.AddressFormatException;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Wallet;
-import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.params.TestNet3Params;
-import org.bitcoinj.store.UnreadableWalletException;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
 
@@ -98,6 +93,22 @@ public class ExampleRunner {
 				setupMarriedWallets();
 			} 
 			
+			else if (cmd.equals("decrypt")) {
+				System.out.println("enter wallet_ID: ");
+				String id = in.nextLine();
+				WalletController controller = controllers.get(Integer.parseInt(id));
+				System.out.println("enter password: ");
+				controller.decryptWallet(in.nextLine());
+			}
+			
+			else if (cmd.equals("encrypt")) {
+				System.out.println("enter wallet_ID: ");
+				String id = in.nextLine();
+				WalletController controller = controllers.get(Integer.parseInt(id));
+				System.out.println("enter password: ");
+				controller.encryptWallet(in.nextLine());
+			}
+			
 			else {
 				System.out.println("I can't do that Dave...");
 			}
@@ -148,6 +159,7 @@ public class ExampleRunner {
 		
         System.out.println("Wallet_1" + controller1.printTransactionSigners(wallet1.getTransactionSigners()));
         System.out.println("Wallet_2" + controller2.printTransactionSigners(wallet2.getTransactionSigners()));
+        
         controller1.saveWallet("DemoWallet_1");
         controller2.saveWallet("DemoWallet_2");
         

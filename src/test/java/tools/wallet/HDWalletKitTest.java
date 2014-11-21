@@ -23,6 +23,9 @@ import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.junit.After;
 import org.junit.Test;
 
+import tools.crypto.DemoTransactionSigner;
+import tools.crypto.PluggableTransactionSigner;
+
 public class HDWalletKitTest {
 	private HDWalletKit walletKit_1;
 	private HDWalletKit walletKit_2;
@@ -32,7 +35,7 @@ public class HDWalletKitTest {
 	//These are wonderful tools provided by bitcoinj for this very purpose
 	private NetworkParameters params = TestNet3Params.get();
 
-	//@Test
+//	@Test
 	public void testSetupHDWalletandReload() throws Exception{
 		String name = filePrefix+System.currentTimeMillis();
 		File dir = new File(testDirectory);
@@ -78,6 +81,8 @@ public class HDWalletKitTest {
         
         walletKit_1.addPairedWallet("description", chain, true);
         assertTrue(walletKit_1.getSigners().size() == 2);
+        Address a = walletKit_1.wallet().freshReceiveAddress();
+        assertTrue(a.isP2SHAddress());
 		walletKit_1.stopAsync();
 		walletKit_1.awaitTerminated();
 	}

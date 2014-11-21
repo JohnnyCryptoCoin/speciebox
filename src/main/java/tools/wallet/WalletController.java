@@ -28,6 +28,7 @@ import org.bitcoinj.crypto.KeyCrypterScrypt;
 import org.bitcoinj.params.RegTestParams;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.script.Script;
+import org.bitcoinj.signers.LocalTransactionSigner;
 import org.bitcoinj.signers.TransactionSigner;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
@@ -37,6 +38,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
+import tools.crypto.PluggableTransactionSigner;
 import tools.wallet.HDWalletKit;
 
 public class WalletController {
@@ -61,7 +63,7 @@ public class WalletController {
 		SPECIEBOX = new HDWalletKit(params, new File(walletDirectory), fileName, threshold);
     }
     
-    public WalletController(NetworkParameters params, String walletDirectory, int threshold, List<DeterministicKey> followingKeys){
+    public WalletController(NetworkParameters params, String walletDirectory, int threshold, List<DeterministicKeyChain> followingKeys){
     	this.params = params;
     	this.isEncrypted = false;
     	this.filePrefix = "specie-wallet_" + now();
@@ -152,10 +154,6 @@ public class WalletController {
 		return SPECIEBOX.wallet();
 	}
 	
-	public List<DeterministicKey> getFollowingKeys(){
-		return SPECIEBOX.getFollowingKeys();
-	}
-	
 	public String getName(){
 		return this.name;
 	}
@@ -241,7 +239,7 @@ class WalletListener extends AbstractWalletEventListener {
 @Override
 public void onCoinsReceived(Wallet wallet, Transaction tx, Coin prevBalance, Coin newBalance) {
     System.out.println("-----> coins resceived: " + tx.getHashAsString());
-    System.out.println("received: " + tx.getValue(wallet));
+    System.out.println(wallet.getDescription()+" received: " + tx.getValue(wallet));
 }
 
 @Override
@@ -253,7 +251,7 @@ public void onTransactionConfidenceChanged(Wallet wallet, Transaction tx) {
 
 @Override
 public void onCoinsSent(Wallet wallet, Transaction tx, Coin prevBalance, Coin newBalance) {
-    System.out.println("coins sent");
+    System.out.println("coins sent from "+wallet.getDescription());
 }
 
 @Override

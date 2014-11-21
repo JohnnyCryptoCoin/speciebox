@@ -1,8 +1,11 @@
 package tools.crypto;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.crypto.ChildNumber;
 import org.bitcoinj.crypto.DeterministicKey;
+import org.bitcoinj.crypto.KeyCrypter;
 import org.bitcoinj.signers.CustomTransactionSigner;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import com.google.common.collect.ImmutableList;
@@ -53,9 +56,8 @@ public class DemoTransactionSigner extends CustomTransactionSigner {
         System.out.println("getKeyByPath t: " + keyChain.getKeyByPath(keyPath, true));
         
     	//Dummy check. We will base our accept/reject criteria off of this.
-        System.out.println("TransactionSigner: " + description + ", do you want to sign this transaxtion? [y/n]");
         Scanner in = new Scanner(System.in);
-        String sign = in.nextLine();
+        System.out.println("TransactionSigner: " + description + ", do you want to sign this transaxtion? [y/n]");
         
         if(in.equals("y") || in.equals("yes")){
 	    	DeterministicKey key = keyChain.getKeyByPath(keyPath, true);
