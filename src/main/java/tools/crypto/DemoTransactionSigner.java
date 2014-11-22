@@ -58,8 +58,8 @@ public class DemoTransactionSigner extends CustomTransactionSigner {
     	//Dummy check. We will base our accept/reject criteria off of this.
         Scanner in = new Scanner(System.in);
         System.out.println("TransactionSigner: " + description + ", do you want to sign this transaxtion? [y/n]");
-        
-        if(in.equals("y") || in.equals("yes")){
+        String sig = in.nextLine();
+        if(sig.equals("y") || sig.equals("yes")){
 	    	DeterministicKey key = keyChain.getKeyByPath(keyPath, true);
 	    	return new SignatureAndKey(key.sign(sighash), key.getPubOnly());
         } else {
