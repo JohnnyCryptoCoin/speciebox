@@ -12,11 +12,13 @@ import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Wallet;
+import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
 
-import tools.wallet.WalletController;
+import tools.crypto.PluggableTransactionSigner;
+import tools.wallet.WalletController2;
 
 import com.google.common.base.Joiner;
 
@@ -28,7 +30,7 @@ public class ExampleRunner {
 //	private static TestKey key = new TestKey(UUID.getBytes());
 //	private static User user = new User(UUID);
 	private static String testDirectory = "testFiles/";
-	private static List<WalletController> controllers = new ArrayList<WalletController>();
+	private static List<WalletController2> controllers = new ArrayList<WalletController2>();
 	private static Scanner in = new Scanner(System.in);
 	
 	public static void main(String[] args) {
@@ -42,7 +44,7 @@ public class ExampleRunner {
 				String fileName = in.nextLine();
 				System.out.println("enter predetermined_threshold: ");
 				int threshold = Integer.parseInt(in.nextLine());
-				WalletController controller = new WalletController(TestNet3Params.get(), "demoWallet/", fileName, threshold);
+				WalletController2 controller = new WalletController2(TestNet3Params.get(), "demoWallet/", fileName, threshold);
 				controller.setupWalletKit(null);
 				
 				controllers.add(controller);
@@ -51,7 +53,7 @@ public class ExampleRunner {
 			else if(cmd.equals("spend")){
 				System.out.println("enter wallet_ID: ");
 				String id = in.nextLine();
-				WalletController controller = controllers.get(Integer.parseInt(id));
+				WalletController2 controller = controllers.get(Integer.parseInt(id));
 				try {
 					System.out.println("enter address to send to: ");
 					String stringAddr = in.nextLine();
@@ -69,7 +71,7 @@ public class ExampleRunner {
 			else if(cmd.equals("balance")){
 				System.out.println("enter wallet_ID: ");
 				String id = in.nextLine();
-				WalletController controller = controllers.get(Integer.parseInt(id));;
+				WalletController2 controller = controllers.get(Integer.parseInt(id));;
 				System.out.println(controller.getBalance().toFriendlyString());
 			}
 			
@@ -85,7 +87,7 @@ public class ExampleRunner {
 			else if (cmd.equals("print")) {
 				System.out.println("enter wallet_ID: ");
 				String id = in.nextLine();
-				WalletController controller = controllers.get(Integer.parseInt(id));
+				WalletController2 controller = controllers.get(Integer.parseInt(id));
 				System.out.println(controller.toString());
 			} 
 			
@@ -96,7 +98,7 @@ public class ExampleRunner {
 			else if (cmd.equals("decrypt")) {
 				System.out.println("enter wallet_ID: ");
 				String id = in.nextLine();
-				WalletController controller = controllers.get(Integer.parseInt(id));
+				WalletController2 controller = controllers.get(Integer.parseInt(id));
 				System.out.println("enter password: ");
 				controller.decryptWallet(in.nextLine());
 			}
@@ -104,7 +106,7 @@ public class ExampleRunner {
 			else if (cmd.equals("encrypt")) {
 				System.out.println("enter wallet_ID: ");
 				String id = in.nextLine();
-				WalletController controller = controllers.get(Integer.parseInt(id));
+				WalletController2 controller = controllers.get(Integer.parseInt(id));
 				System.out.println("enter password: ");
 				controller.encryptWallet(in.nextLine());
 			}
@@ -114,7 +116,7 @@ public class ExampleRunner {
 			}
 		}
         
-		for(WalletController controller:controllers){
+		for(WalletController2 controller:controllers){
 			controller.shutdown();
 		}
 		System.out.println("shutdown complete");
@@ -125,25 +127,25 @@ public class ExampleRunner {
 		DeterministicSeed nullSeed = null;
 		
 		NetworkParameters params = TestNet3Params.get();
-		WalletController controller1 = new WalletController(params, classpath, "DemoWallet_1", 2);
+		WalletController2 controller1 = new WalletController2(params, classpath, "DemoWallet_1", 2);
 		controller1.setupWalletKit(nullSeed);
 		Wallet wallet1 = controller1.getWallet();
-		DeterministicKeyChain follower_for_wallet1 = wallet1.getActiveKeychain();
+		DeterministicKey follower_for_wallet1 = wallet1.getWatchingKey();
 		System.out.println(follower_for_wallet1.toString());
 		System.out.println("---------------------------------------------------");
 		
-		WalletController controller2 = new WalletController(params, classpath, "DemoWallet_2", 2);
+		WalletController2 controller2 = new WalletController2(params, classpath, "DemoWallet_2", 2);
 		controller2.setupWalletKit(nullSeed);
 		Wallet wallet2 = controller2.getWallet();
-		DeterministicKeyChain follower_for_wallet2 = wallet2.getActiveKeychain();
+		DeterministicKey follower_for_wallet2 = wallet2.getWatchingKey();
 		System.out.println(follower_for_wallet2.toString());
 		System.out.println("---------------------------------------------------");
 
 		controller1.setName("Wallet_1");
 		controller2.setName("Wallet_2");
 		
-		controller1.addMarriedWallet(controller2.getName(), follower_for_wallet2);
-		controller2.addMarriedWallet(controller1.getName(), follower_for_wallet1);
+		controller1.addMarriedWallet(controller2.getName(), new PluggableTransactionSigner(follower_for_wallet2, "Wallet_2 Signer"));
+		controller2.addMarriedWallet(controller1.getName(),  new PluggableTransactionSigner(follower_for_wallet2, "Wallet_2 Signer"));
 		
 		System.out.println("---------------------------------------------------");
 		System.out.println("Send coins to: " + controller1.getRecieveAddress(true));
@@ -170,7 +172,7 @@ public class ExampleRunner {
 	private static void save(String walletFile) {
 		System.out.println("enter wallet_ID: ");
 		String id = in.nextLine();
-		WalletController controller = controllers.get(Integer.parseInt(id));
+		WalletController2 controller = controllers.get(Integer.parseInt(id));
 		controller.saveWalletSeed("demoWallet/" + walletFile);
 	}
 

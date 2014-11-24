@@ -34,8 +34,8 @@ import org.bitcoinj.signers.LocalTransactionSigner;
 import org.bitcoinj.signers.TransactionSigner;
 import org.bitcoinj.store.BlockStoreException;
 import org.bitcoinj.wallet.DeterministicKeyChain;
+//import org.bitcoinj.wallet.MarriedKeyChain;
 
-import tools.crypto.DemoTransactionSigner;
 import tools.crypto.PluggableTransactionSigner;
 
 import com.google.common.collect.Lists;
@@ -63,14 +63,14 @@ import com.google.common.collect.Lists;
  * access the objects this class creates until startup is complete.
  *
  */
-public class HDWalletKit extends WalletAppKit {
+public class HDWalletKit2 extends WalletAppKit {
 	
 	private final int walletThreshold;
 
 	private int currentSigners;
 	protected boolean RELOAD = false;
 	private boolean addSigners;
-	private List<DeterministicKeyChain> followingKeyChains;
+	private List<DeterministicKey> followingKeys;
 	
 	
 	// As of Bitcoin Core 0.9 all multisig transactions which require more than 3 public keys are non-standard
@@ -78,51 +78,61 @@ public class HDWalletKit extends WalletAppKit {
 	// a std one while it goes out into the world?
 	
 	//loads a wallet from file or creats a new one with no followingkeys and a threshold of 1
-	public HDWalletKit(NetworkParameters params, File file, String fileName, int threshold) {
+	public HDWalletKit2(NetworkParameters params, File file, String fileName, int threshold) {
 		super(params, file, fileName);
 		this.walletThreshold = threshold;
 		this.addSigners = true;
-		this.followingKeyChains = null;
+		this.followingKeys = null;
 		this.RELOAD = true;
-		this.followingKeyChains = new ArrayList<DeterministicKeyChain>();
+		this.followingKeys = new ArrayList<DeterministicKey>();
 	}
     
     // creats a wallet that need Threshold of Keys (X out of Y) to spend
-    HDWalletKit(NetworkParameters params, File directory, String filePrefix, int threshold, 
-    			boolean addSigners, List<DeterministicKeyChain> followingKeyChain) {
+    HDWalletKit2(NetworkParameters params, File directory, String filePrefix, int threshold, 
+    			boolean addSigners, List<DeterministicKey> followingKeys) {
     	super(params, directory, filePrefix);
     	this.walletThreshold = threshold;
     	this.addSigners = addSigners;
     	
     	// once the wallet's creation is handled we are going to build a list of DeterministicKeys
-        this.followingKeyChains = followingKeyChains;
+        this.followingKeys = followingKeys;
     }
 
 	// If true, the wallet will save itself to disk automatically whenever it changes.
-    public HDWalletKit setAutoSave(boolean value) {
+    public HDWalletKit2 setAutoSave(boolean value) {
         checkState(state() == State.NEW, "Cannot call after startup");
         useAutoSave = value;
         return this;
     }
     
-    public void addPairedWallet (String description, DeterministicKeyChain chain, boolean increaseThreshold){
-    	System.out.print(wallet().getDescription()+", a "+currentSigners+"/"+(followingKeyChains.size()+1)+" wallet... ");
-    	
-    	followingKeyChains.add(chain);
-		if(increaseThreshold && currentSigners < walletThreshold){
-			currentSigners++;
-			this.wallet().addTransactionSigner(new DemoTransactionSigner(chain, description));
-		}
-	
-		//We can leverage addAndActivateHDChain 
+//    public void addPairedWallet (String description, DeterministicKeyChain chain, boolean increaseThreshold){
+//    	System.out.print(wallet().getDescription()+", a "+currentSigners+"/"+(followingKeys.size()+1)+" wallet... ");
+//    	
+//    	followingKeys.add(chain.getWatchingKey());
+//		if(increaseThreshold && currentSigners < walletThreshold){
+//			currentSigners++;
+//			this.wallet().addTransactionSigner(new DemoTransactionSigner(chain, description));
+//		}
+//	
+//		//We can leverage addAndActivateHDChain 
 //		MarriedKeyChain marriedChain = MarriedKeyChain.builder()
 //				.random(new SecureRandom())
 //				.followingKeys(DeterministicKey.deserializeB58(null, chain.getWatchingKey().serializePubB58()))
 //				.threshold(walletThreshold).build();
 //		this.wallet().addAndActivateHDChain(marriedChain);
-    	System.out.println("Is now a "+currentSigners+"/"+(followingKeyChains.size()+1)+" wallet");
-    }
+//    	System.out.println("Is now a "+currentSigners+"/"+(followingKeys.size()+1)+" wallet");
+//    }
     
+    public void addPairedWallet (String description, PluggableTransactionSigner signer, boolean increaseThreshold){
+    	System.out.print(wallet().getDescription()+", a "+currentSigners+"/"+(followingKeys.size()+1)+" wallet... ");
+    	followingKeys.add(signer.getWatchingKey());
+		if(increaseThreshold && currentSigners < walletThreshold){
+			currentSigners++;
+			this.wallet().addTransactionSigner(signer);
+			this.wallet().addFollowingAccountKeys(Lists.newArrayList(signer.getWatchingKey()), walletThreshold);
+		}
+    	System.out.println("Is now a "+currentSigners+"/"+(followingKeys.size()+1)+" wallet");
+    }
     
     public int getThreshold(){
     	return walletThreshold;
@@ -132,8 +142,8 @@ public class HDWalletKit extends WalletAppKit {
     	return this.wallet().getTransactionSigners();
     }
     
-    public List<DeterministicKeyChain> getFollowingKeys(){
-    	return this.followingKeyChains;
+    public List<DeterministicKey> getFollowingKeys(){
+    	return this.followingKeys;
     }
     
     @Override
@@ -149,36 +159,54 @@ public class HDWalletKit extends WalletAppKit {
     }
 
     // In our HD startup method we will create a N/N wallet
+    @Override
     protected void startUp() throws Exception {
     	super.startUp();
     	
     	if(! RELOAD){
-    		
-    		//is this really necessary??
-    		List<DeterministicKey> followingB58Keys = new ArrayList<DeterministicKey>();
-    		Iterator<DeterministicKeyChain> it = followingKeyChains.iterator();
-    		int i = 0;
-    		while(it.hasNext()) {
-    			DeterministicKeyChain dKey = it.next();
-    			//method that gets watching key for the new list of following keys. we can get the watchingkey of any Wallet though
-    			DeterministicKey partnerKey = DeterministicKey.deserializeB58(null, dKey.getWatchingKey().serializePubB58());
-    			followingB58Keys.add(partnerKey);
-    			if(addSigners && i < walletThreshold - 1){
-    				this.wallet().addTransactionSigner(new DemoTransactionSigner(dKey, null));
-    				i++;
+    		for(int i = 0; i<walletThreshold-1; i++){
+    			DeterministicKeyChain keyChain = new DeterministicKeyChain(new SecureRandom());
+    			followingKeys.add(keyChain.getWatchingKey());
+    			if(currentSigners < walletThreshold){
+    				currentSigners++;
+    				this.wallet().addTransactionSigner(new PluggableTransactionSigner(keyChain.getWatchingKey(), ("signer-"+(i+1))));
     			}
     		}
+    		//this.wallet().addFollowingAccountKeys(followingKeys, walletThreshold);
+    	}
+
+    }
+//    protected void startUp() throws Exception {
+//    	super.startUp();
+//    	
+//    	if(! RELOAD){
+//    		
+//    		//is this really necessary??
+//    		List<DeterministicKey> followingB58Keys = new ArrayList<DeterministicKey>();
+//    		Iterator<DeterministicKey> it = followingKeys.iterator();
+//    		int i = 0;
+//    		while(it.hasNext()) {
+//    			DeterministicKey dKey = it.next();
+//    			//method that gets watching key for the new list of following keys. we can get the watchingkey of any Wallet though
+//    			DeterministicKey partnerKey = DeterministicKey.deserializeB58(null, dKey.serializePubB58());
+//    			followingB58Keys.add(partnerKey);
+//    			if(addSigners && i < walletThreshold - 1){
+//    				this.wallet().addTransactionSigner(new DemoTransactionSigner(dKey, null));
+//    				i++;
+//    			}
+//    		}
 //    		// This keychain keeps track of "following keychains" that follow the account key of this keychain.
 //    		// You can get P2SH addresses to receive coins to from this chain. The threshold (walletThreshold)
 //    		// specifies how many signatures required to spend transactions for this married keychain.
-//    		MarriedKeyChain chain = MarriedKeyChain.builder()
-//    				.random(new SecureRandom())
-//    				.followingKeys(followingB58Keys)
-//    				.threshold(walletThreshold).build();
-//    		this.wallet().addAndActivateHDChain(chain);
+//    		//MarriedKeyChain chain = MarriedKeyChain.builder()
+//    		//		.random(new SecureRandom())
+//    		//		.followingKeys(followingB58Keys)
+//    		//		.threshold(walletThreshold).build();
+//    		//this.wallet().addAndActivateHDChain(chain);
 //    		//We can create new wallets from each of these following keys, and they will start as part of the HD structure.
-    	}
-    }
+//    	}
+//
+//    }
 
     @Override
     protected void shutDown() throws Exception {

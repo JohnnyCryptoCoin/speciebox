@@ -23,23 +23,22 @@ import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.junit.After;
 import org.junit.Test;
 
-import tools.crypto.DemoTransactionSigner;
 import tools.crypto.PluggableTransactionSigner;
 
-public class HDWalletKitTest {
-	private HDWalletKit walletKit_1;
-	private HDWalletKit walletKit_2;
+public class HDWalletKit2Test {
+	private HDWalletKit2 walletKit_1;
+	private HDWalletKit2 walletKit_2;
 	private String testDirectory = "testFiles/tmp/";
 	private String filePrefix = "speciebox-testnet-wallet_";
 	
 	//These are wonderful tools provided by bitcoinj for this very purpose
 	private NetworkParameters params = TestNet3Params.get();
 
-//	@Test
+	//@Test
 	public void testSetupHDWalletandReload() throws Exception{
 		String name = filePrefix+System.currentTimeMillis();
 		File dir = new File(testDirectory);
-		walletKit_1 = new HDWalletKit(params, dir, name, 1);
+		walletKit_1 = new HDWalletKit2(params, dir, name, 1);
 		walletKit_1.startAsync();
 		walletKit_1.awaitRunning();
 		
@@ -53,7 +52,7 @@ public class HDWalletKitTest {
         
 		System.out.println("shutdown wallet 1 loading wallet 2");
 		
-		walletKit_2 = new HDWalletKit(params, dir, name, 1);
+		walletKit_2 = new HDWalletKit2(params, dir, name, 1);
 		assertTrue(walletKit_2.RELOAD);
 		
 		walletKit_2.startAsync();
@@ -67,24 +66,30 @@ public class HDWalletKitTest {
 		walletKit_2.awaitTerminated();
 	}
 	
-//	@Test
+	@Test
 	public void testSetupHDWalletAndAddWatchingKey() throws Exception{
-		walletKit_1 = new HDWalletKit(params, new File(testDirectory), filePrefix+System.currentTimeMillis(), 2);
+		walletKit_1 = new HDWalletKit2(params, new File(testDirectory), filePrefix+System.currentTimeMillis(), 2);
 		walletKit_1.startAsync();
 		walletKit_1.awaitRunning();
 		
 		assertTrue(walletKit_1.getThreshold() == 2);
         assertTrue(walletKit_1.getSigners().size() == 1);
-        SecureRandom random = new SecureRandom();
-        DeterministicKeyChain chain = new DeterministicKeyChain(random);
         
+
+        walletKit_2 = new HDWalletKit2(params, new File(testDirectory), filePrefix+System.currentTimeMillis(), 2);
+		walletKit_2.startAsync();
+		walletKit_2.awaitRunning();
         
-        walletKit_1.addPairedWallet("description", chain, true);
+        DeterministicKey wKey = DeterministicKey.deserializeB58(null, walletKit_2.wallet().getWatchingKey().serializePubB58());
+		walletKit_1.addPairedWallet("description", new PluggableTransactionSigner(wKey), true);
         assertTrue(walletKit_1.getSigners().size() == 2);
         Address a = walletKit_1.wallet().freshReceiveAddress();
+        System.out.println("freshReceiveAddress() : " + a.hashCode());
         assertTrue(a.isP2SHAddress());
 		walletKit_1.stopAsync();
+		walletKit_2.stopAsync();
 		walletKit_1.awaitTerminated();
+		walletKit_2.awaitTerminated();
 	}
 
 	public void simpleSend (Address toAddress, Coin value){
