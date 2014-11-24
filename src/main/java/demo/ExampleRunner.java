@@ -1,6 +1,7 @@
 package demo;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -57,7 +58,13 @@ public class ExampleRunner {
 					String stringAddr = in.nextLine();
 					Address toAddress;
 					toAddress = new Address(TestNet3Params.get(), stringAddr);
-					System.out.println("enter value [0.000001 BTC,"+controller.getBalance().toFriendlyString()+"]: ");
+					String balanceValue = controller.getBalance().toFriendlyString();
+					System.out.println(balanceValue.substring(0, balanceValue.indexOf(" ")));
+					
+					BigDecimal spendable = new BigDecimal(balanceValue.substring(0, balanceValue.indexOf(" ")));
+					
+					System.out.println("enter value [0.000001 BTC,"+ spendable.subtract(new BigDecimal(0.0001)).toPlainString().substring(0,9) +" BTC]: ");
+					System.out.println("NOTICE: A 0.0001 BTC fee will be added to your transaction.");
 					String stringVal = in.nextLine();
 					Coin value = Coin.parseCoin(stringVal);
 					controller.sendCoins(toAddress, value, false);

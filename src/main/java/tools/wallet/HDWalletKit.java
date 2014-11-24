@@ -21,7 +21,6 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Watchable;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -30,17 +29,12 @@ import java.util.List;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.kits.WalletAppKit;
-import org.bitcoinj.signers.LocalTransactionSigner;
 import org.bitcoinj.signers.TransactionSigner;
 import org.bitcoinj.store.BlockStoreException;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.MarriedKeyChain;
-//import org.bitcoinj.wallet.MarriedKeyChain;
 
 import tools.crypto.DemoTransactionSigner;
-import tools.crypto.PluggableTransactionSigner;
-
-import com.google.common.collect.Lists;
 
 /**
  * Extention of bitcoinj's WalletAppKit for our own purposes.
