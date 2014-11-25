@@ -7,7 +7,10 @@ import org.bitcoinj.crypto.ChildNumber;
 import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.crypto.KeyCrypter;
 import org.bitcoinj.signers.CustomTransactionSigner;
+import org.bitcoinj.signers.TransactionSigner.ProposedTransaction;
 import org.bitcoinj.wallet.DeterministicKeyChain;
+import org.bitcoinj.wallet.KeyBag;
+
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
@@ -55,15 +58,20 @@ public class DemoTransactionSigner extends CustomTransactionSigner {
         System.out.println("child numer: "+keyPath.get(0).getI());
         System.out.println("getKeyByPath t: " + keyChain.getKeyByPath(keyPath, true));
         
+	    DeterministicKey key = keyChain.getKeyByPath(keyPath, true);
+	    return new SignatureAndKey(key.sign(sighash), key.getPubOnly());
+    }
+    
+    @Override
+    public boolean signInputs(ProposedTransaction propTx, KeyBag keyBag) {
     	//Dummy check. We will base our accept/reject criteria off of this.
         Scanner in = new Scanner(System.in);
         System.out.println("TransactionSigner: " + description + ", do you want to sign this transaxtion? [y/n]");
         String sig = in.nextLine();
         if(sig.equals("y") || sig.equals("yes")){
-	    	DeterministicKey key = keyChain.getKeyByPath(keyPath, true);
-	    	return new SignatureAndKey(key.sign(sighash), key.getPubOnly());
+        	return super.signInputs(propTx, keyBag);
         } else {
-        	return new SignatureAndKey(watchingKey.sign(sighash), watchingKey.getPubOnly());
+        	return false;
         }
     }
     
