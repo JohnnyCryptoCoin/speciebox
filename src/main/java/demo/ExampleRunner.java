@@ -17,6 +17,7 @@ import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
 
+import tools.crypto.DemoTransactionSigner;
 import tools.wallet.WalletController;
 
 import com.google.common.base.Joiner;
@@ -135,22 +136,28 @@ public class ExampleRunner {
 		WalletController controller1 = new WalletController(params, classpath, "DemoWallet_1", 2);
 		controller1.setupWalletKit(nullSeed);
 		Wallet wallet1 = controller1.getWallet();
-		DeterministicKeyChain follower_for_wallet1 = wallet1.getActiveKeychain();
-		System.out.println(follower_for_wallet1.toString());
-		System.out.println("---------------------------------------------------");
 		
 		WalletController controller2 = new WalletController(params, classpath, "DemoWallet_2", 2);
 		controller2.setupWalletKit(nullSeed);
 		Wallet wallet2 = controller2.getWallet();
-		DeterministicKeyChain follower_for_wallet2 = wallet2.getActiveKeychain();
-		System.out.println(follower_for_wallet2.toString());
 		System.out.println("---------------------------------------------------");
 
 		controller1.setName("Wallet_1");
 		controller2.setName("Wallet_2");
 		
-		controller1.addMarriedWallet(controller2.getName(), follower_for_wallet2);
-		controller2.addMarriedWallet(controller1.getName(), follower_for_wallet1);
+		DemoTransactionSigner signer1 = new DemoTransactionSigner();
+		DemoTransactionSigner signer2 = new DemoTransactionSigner();
+		
+		DeterministicKeyChain follower1 = wallet1.getActiveKeychain();
+		DeterministicKeyChain follower2 = wallet2.getActiveKeychain();
+		System.out.println("Enter Phone# for wallet1: ");
+		String phone = in.nextLine();
+		
+		signer1.setup(follower1, "TransactionSigner for Wallet_1", phone);
+		signer2.setup(follower2, "TransactionSigner for Wallet_2", "1234567890");
+
+		controller1.addMarriedWallet(controller2.getName(), signer2);
+		controller2.addMarriedWallet(controller1.getName(), signer1);
 		
 		System.out.println("---------------------------------------------------");
 		System.out.println("Send coins to: " + controller1.getRecieveAddress(true));

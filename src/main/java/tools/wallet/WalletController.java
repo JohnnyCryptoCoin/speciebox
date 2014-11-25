@@ -29,6 +29,8 @@ import org.bitcoinj.signers.TransactionSigner;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
 
+import tools.crypto.DemoTransactionSigner;
+
 import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -128,12 +130,12 @@ public class WalletController {
 		SPECIEBOX.wallet().addEventListener(listener);
 	}
 	
-	public void addFollowingWallet(String description, DeterministicKeyChain chain){
-		SPECIEBOX.addPairedWallet(description, chain, false);
+	public void addFollowingWallet(String description, DemoTransactionSigner signer){
+		SPECIEBOX.addPairedWallet(description, signer, false);
 	}
 	
-	public void addMarriedWallet(String description, DeterministicKeyChain chain){
-		SPECIEBOX.addPairedWallet(description, chain, true);
+	public void addMarriedWallet(String description, DemoTransactionSigner signer){
+		SPECIEBOX.addPairedWallet(description, signer, true);
 	}
 	
 	public Coin getBalance() {

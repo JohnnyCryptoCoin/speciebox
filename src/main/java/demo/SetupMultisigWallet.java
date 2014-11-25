@@ -12,6 +12,7 @@ import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
 
+import tools.crypto.DemoTransactionSigner;
 import tools.wallet.WalletController;
 
 public class SetupMultisigWallet {
@@ -44,8 +45,19 @@ public class SetupMultisigWallet {
 		controller1.setName("Wallet_1");
 		controller2.setName("Wallet_2");
 		
-		controller1.addMarriedWallet("Signer for wallet 2", follower_for_wallet2);
-		controller2.addMarriedWallet("Signer for wallet 1", follower_for_wallet1);
+		DemoTransactionSigner signer1 = new DemoTransactionSigner();
+		DemoTransactionSigner signer2 = new DemoTransactionSigner();
+		
+		DeterministicKeyChain follower1 = wallet1.getActiveKeychain();
+		DeterministicKeyChain follower2 = wallet2.getActiveKeychain();
+		System.out.println("Enter Phone# for wallet1: ");
+		String phone = in.nextLine();
+		
+		signer1.setup(follower1, "TransactionSigner for Wallet_1", phone);
+		signer2.setup(follower2, "TransactionSigner for Wallet_2", "1234567890");
+
+		controller1.addMarriedWallet(controller2.getName(), signer2);
+		controller2.addMarriedWallet(controller1.getName(), signer1);
 		
 		System.out.println("---------------------------------------------------");
 		System.out.println("Send coins to: " + controller1.getRecieveAddress(true));

@@ -101,19 +101,19 @@ public class HDWalletKit extends WalletAppKit {
         return this;
     }
     
-    public void addPairedWallet (String description, DeterministicKeyChain chain, boolean increaseThreshold){
+    public void addPairedWallet (String description, DemoTransactionSigner signer, boolean increaseThreshold){
     	System.out.print(wallet().getDescription()+", a "+currentSigners+"/"+(followingKeyChains.size()+1)+" wallet... ");
     	
-    	followingKeyChains.add(chain);
+    	followingKeyChains.add(signer.getKeyChain());
 		if(increaseThreshold && currentSigners < walletThreshold){
 			currentSigners++;
-			this.wallet().addTransactionSigner(new DemoTransactionSigner(chain, description));
+			this.wallet().addTransactionSigner(signer);
 		}
 	
 		//We can leverage addAndActivateHDChain 
 		MarriedKeyChain marriedChain = MarriedKeyChain.builder()
 				.random(new SecureRandom())
-				.followingKeys(DeterministicKey.deserializeB58(null, chain.getWatchingKey().serializePubB58()))
+				.followingKeys(DeterministicKey.deserializeB58(null, signer.getWatchingKey().serializePubB58()))
 				.threshold(walletThreshold).build();
 		this.wallet().addAndActivateHDChain(marriedChain);
     	System.out.println("Is now a "+currentSigners+"/"+(followingKeyChains.size()+1)+" wallet");
@@ -135,7 +135,7 @@ public class HDWalletKit extends WalletAppKit {
     @Override
     protected void onSetupCompleted() {
     	if(RELOAD){
-    		System.out.println("Wallet reload successful");
+//    		System.out.println("Wallet reload successful");
     	} else {
     		System.out.println("Not a reload");
     	}
@@ -149,8 +149,6 @@ public class HDWalletKit extends WalletAppKit {
     	super.startUp();
     	
     	if(! RELOAD){
-    		
-    		//is this really necessary??
     		List<DeterministicKey> followingB58Keys = new ArrayList<DeterministicKey>();
     		Iterator<DeterministicKeyChain> it = followingKeyChains.iterator();
     		int i = 0;

@@ -18,6 +18,8 @@ import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.junit.After;
 import org.junit.Test;
 
+import tools.crypto.DemoTransactionSigner;
+
 public class HDWalletKitTest {
 	private HDWalletKit walletKit_1;
 	private HDWalletKit walletKit_2;
@@ -68,10 +70,9 @@ public class HDWalletKitTest {
 		assertTrue(walletKit_1.getThreshold() == 2);
         assertTrue(walletKit_1.getSigners().size() == 1);
         SecureRandom random = new SecureRandom();
-        DeterministicKeyChain chain = new DeterministicKeyChain(random);
         
-        
-        walletKit_1.addPairedWallet("description", chain, true);
+        DemoTransactionSigner signer = new DemoTransactionSigner(new DeterministicKeyChain(random), "HerpDerp");
+        walletKit_1.addPairedWallet("description", signer, true);
         assertTrue(walletKit_1.getSigners().size() == 2);
         Address a = walletKit_1.wallet().freshReceiveAddress();
         assertTrue(a.isP2SHAddress());

@@ -11,6 +11,8 @@ import org.bitcoinj.signers.TransactionSigner.ProposedTransaction;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.KeyBag;
 
+import tools.sms.TwilioSMSManager;
+
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
@@ -23,8 +25,10 @@ import java.util.Scanner;
 public class DemoTransactionSigner extends CustomTransactionSigner {
 
     private DeterministicKeyChain keyChain;
-    private DeterministicKey watchingKey;
+	private DeterministicKey watchingKey;
     private String description;
+    private String contactNumber = "";
+    private TwilioSMSManager manager =  new TwilioSMSManager();
 
     public DemoTransactionSigner() {
     }
@@ -50,6 +54,14 @@ public class DemoTransactionSigner extends CustomTransactionSigner {
         this.description = description;
         this.keyChain = keyChain;
     }
+    
+    public boolean setup(DeterministicKeyChain keyChain, String description, String contactNumber) {
+        this.watchingKey = keyChain.getWatchingKey();
+        this.description = description;
+        this.keyChain = keyChain;
+        this.contactNumber = contactNumber;
+        return this.isReady();
+    }
 
     //The question to answer is Who am I? I have to find a way to get the signing key without relying on previous signer
     @Override
@@ -62,11 +74,18 @@ public class DemoTransactionSigner extends CustomTransactionSigner {
 	    return new SignatureAndKey(key.sign(sighash), key.getPubOnly());
     }
     
-    @Override
+
+	@Override
     public boolean signInputs(ProposedTransaction propTx, KeyBag keyBag) {
     	//Dummy check. We will base our accept/reject criteria off of this.
         Scanner in = new Scanner(System.in);
-        System.out.println("TransactionSigner: " + description + ", do you want to sign this transaxtion? [y/n]");
+        
+        if (contactNumber.equals("")){
+        	System.out.println("TransactionSigner: " + description + ", do you want to sign this transaxtion? [y/n]");
+        } else {
+        	String message = "TransactionSigner: " + description + ", do you want to sign this transaxtion? [y/n]";
+    		manager.sendMessage(contactNumber, message);
+        }
         String sig = in.nextLine();
         if(sig.equals("y") || sig.equals("yes")){
         	return super.signInputs(propTx, keyBag);
@@ -74,7 +93,15 @@ public class DemoTransactionSigner extends CustomTransactionSigner {
         	return false;
         }
     }
+	
+	public DeterministicKey getWatchingKey() {
+		return watchingKey;
+	}
     
+	public DeterministicKeyChain getKeyChain() {
+		return keyChain;
+	}
+	
     @Override
     public String toString(){
     	return "TransactionSigner: " + description + ". WatchingKey: " + watchingKey;

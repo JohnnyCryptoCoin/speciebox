@@ -21,7 +21,6 @@ public class TwilioSMSManager {
 	private static final String FROMNUMBER = "+16136863717";
 	
 	public TwilioSMSManager() {
-		// TODO Auto-generated constructor stub
 	}
 	
 	public void sendMessage(String toNumber, String messageText){
