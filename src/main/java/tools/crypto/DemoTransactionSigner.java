@@ -11,6 +11,7 @@ import org.bitcoinj.signers.TransactionSigner.ProposedTransaction;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.KeyBag;
 
+import tools.crypto.keys.TestKey;
 import tools.sms.TwilioSMSManager;
 
 import com.google.common.collect.ImmutableList;
@@ -28,7 +29,9 @@ public class DemoTransactionSigner extends CustomTransactionSigner {
 	private DeterministicKey watchingKey;
     private String description;
     private String contactNumber = "";
-    private TwilioSMSManager manager =  new TwilioSMSManager();
+    private volatile TestKey vhex;
+    private TwilioSMSManager smsManager =  new TwilioSMSManager();
+    private CryptographyManager cryptoManager;
 
     public DemoTransactionSigner() {
     }
@@ -60,6 +63,8 @@ public class DemoTransactionSigner extends CustomTransactionSigner {
         this.description = description;
         this.keyChain = keyChain;
         this.contactNumber = contactNumber;
+        this.vhex = new TestKey(contactNumber.getBytes());
+        this.cryptoManager =  new CryptographyManager(80, vhex);
         return this.isReady();
     }
 
@@ -67,8 +72,6 @@ public class DemoTransactionSigner extends CustomTransactionSigner {
     @Override
     protected SignatureAndKey getSignature(Sha256Hash sighash, List<ChildNumber> derivationPath) {
         ImmutableList<ChildNumber> keyPath = ImmutableList.copyOf(derivationPath);
-        System.out.println("child numer: "+keyPath.get(0).getI());
-        System.out.println("getKeyByPath t: " + keyChain.getKeyByPath(keyPath, true));
         
 	    DeterministicKey key = keyChain.getKeyByPath(keyPath, true);
 	    return new SignatureAndKey(key.sign(sighash), key.getPubOnly());
@@ -81,19 +84,29 @@ public class DemoTransactionSigner extends CustomTransactionSigner {
         Scanner in = new Scanner(System.in);
         
         if (contactNumber.equals("")){
-        	System.out.println("TransactionSigner: " + description + ", do you want to sign this transaxtion? [y/n]");
-        } else {
-        	String message = "TransactionSigner: " + description + ", do you want to sign this transaxtion? [y/n]";
-    		manager.sendMessage(contactNumber, message);
-        }
-        String sig = in.nextLine();
-        if(sig.equals("y") || sig.equals("yes")){
-        	return super.signInputs(propTx, keyBag);
-        } else {
+        	System.out.println("You must run setup first!!!!!");
         	return false;
+        } else {
+        	notifyFollower();
+    		System.out.println("--- "+description+" OTP ---");
+	        String sig = in.nextLine();
+	        if(cryptoManager.verifyOTP(vhex.getHexKey(), sig)){
+	        	return super.signInputs(propTx, keyBag);
+	        } else {
+	        	return false;
+	        }
         }
     }
 	
+	private void notifyFollower() {
+		 StringBuilder sb = new StringBuilder();
+		  sb.append("This token is good for only").append(80).append(" seconds \n \"");
+		  sb.append(cryptoManager.getOTP(vhex.getHexKey()));
+		  sb.append("\" - SpecieBox \n");
+		  sb.append("Please enter the token in the command-line");
+		  smsManager.sendMessage(contactNumber, sb.toString());
+	}
+
 	public DeterministicKey getWatchingKey() {
 		return watchingKey;
 	}

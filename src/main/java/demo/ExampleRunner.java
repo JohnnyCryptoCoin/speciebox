@@ -150,11 +150,11 @@ public class ExampleRunner {
 		
 		DeterministicKeyChain follower1 = wallet1.getActiveKeychain();
 		DeterministicKeyChain follower2 = wallet2.getActiveKeychain();
-		System.out.println("Enter Phone# for wallet1: ");
+		System.out.println("Enter Phone# for wallet2: ");
 		String phone = in.nextLine();
 		
-		signer1.setup(follower1, "TransactionSigner for Wallet_1", phone);
-		signer2.setup(follower2, "TransactionSigner for Wallet_2", "1234567890");
+		signer1.setup(follower1, "TransactionSigner for Wallet_1", "1234567890");
+		signer2.setup(follower2, "TransactionSigner for Wallet_2", phone);
 
 		controller1.addMarriedWallet(controller2.getName(), signer2);
 		controller2.addMarriedWallet(controller1.getName(), signer1);
