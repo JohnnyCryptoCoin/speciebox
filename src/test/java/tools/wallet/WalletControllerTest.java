@@ -109,7 +109,7 @@ public class WalletControllerTest {
         
         //new coin for test
         Coin coin = Coin.parseCoin("0.009");
-        controller.sendCoins(address, coin, false);
+        controller.sendCoins(address, coin);
         controller.shutdown();
         cleanup();
 	}

@@ -167,7 +167,7 @@ public class WalletController {
 		return sdf.format(cal.getTime());
 	}
 	
-	public void sendCoins (Address toAddress, Coin value, boolean isRetry){
+	public void sendCoins (Address toAddress, Coin value){
 		try {
             Wallet.SendResult result = SPECIEBOX.wallet().sendCoins(SPECIEBOX.peerGroup(), toAddress, value);
             result.broadcastComplete.get();
@@ -212,7 +212,7 @@ public class WalletController {
 		
 		out.append(printTransactionSigners(SPECIEBOX.getSigners()));
 		out.append("\n \n ------------------------------------------------ \n");
-		out.append(SPECIEBOX.wallet().toString(false, true, true, null));
+		out.append(SPECIEBOX.wallet().toString(true, true, true, null));
 		return out.toString();
 	}
 

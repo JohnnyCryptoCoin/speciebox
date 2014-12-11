@@ -7,7 +7,7 @@ import org.bouncycastle.crypto.params.KeyParameter;
 
 
 public class TestKey implements IKeyProvider {
-	private final byte[] KEY;
+	private volatile byte[] KEY;
 	public TestKey(byte[] secretKey) {
 		//TODO: key design decisions. Pending on DB decisions as well
 		SHA256Digest digest = new SHA256Digest();

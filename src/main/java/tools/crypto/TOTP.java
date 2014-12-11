@@ -22,12 +22,6 @@ public class TOTP {
      public TOTP(int timeStep) {
 		this.timeStep = timeStep;
 	}
-     
-     private String currentTimeStampUTC(){
-    	    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-    	    long time = (cal.getTimeInMillis() / 1000) / timeStep;
-    	    return Long.toString(time);
-     }
 
 	//HMAC computes a Hashed Message Authentication Code with the crypto hash algorithm as a parameter.
      private byte[] hmac_sha(String crypto, byte[] keyBytes, byte[] text){
@@ -63,31 +57,30 @@ public class TOTP {
 
     // These methods generate a TOTP value for the given set of parameters.
      public String generateTOTP(String key, int returnDigits){
-         return generateTOTP(key, currentTimeStampUTC(), returnDigits, "HmacSHA1");
+         return generateTOTP(key, returnDigits, "HmacSHA1");
      }
      
      public String generateTOTP256(String key, int returnDigits){
-         return generateTOTP(key, currentTimeStampUTC(), returnDigits, "HmacSHA256");
+         return generateTOTP(key, returnDigits, "HmacSHA256");
      }
 
      public String generateTOTP512(String key, int returnDigits){
-         return generateTOTP(key, currentTimeStampUTC(), returnDigits, "HmacSHA512");
+         return generateTOTP(key, returnDigits, "HmacSHA512");
      }
 
-     // Generic TOTP method for all the above params
-     public String generateTOTP(String key, String time, int returnDigits, String crypto){
+     // Generic TOTP method for all the above params, 
+     // we do not allow user set the time manually!
+     public String generateTOTP(String key, int returnDigits, String crypto){
          String result = null;
-
-         // Using the counter
-         // First 8 bytes are for the movingFactor
-         // Compliant with base RFC 4226 (HOTP)
-         while (time.length() < 16 )
+         String time = currentTimeStampUTC();
+         
+         //Pad the value to 16 characters
+         while (time.length() < 16 ){
              time = "0" + time;
+         }
 
-         // Get the HEX in a Byte[]
-         byte[] msg = hexStr2Bytes(time);
-         byte[] k = hexStr2Bytes(key);
-         byte[] hash = hmac_sha(crypto, k, msg);
+         // Get the HEX strings in a Byte[]
+         byte[] hash = hmac_sha(crypto, hexStr2Bytes(key), hexStr2Bytes(time));
 
          // put selected bytes into result int
          int offset = hash[hash.length - 1] & 0xf;
@@ -98,12 +91,19 @@ public class TOTP {
              ((hash[offset + 2] & 0xff) << 8) |
              (hash[offset + 3] & 0xff);
 
-         long otp = binary % DIGITS_POWER[returnDigits];
-
-         result = Long.toString(otp);
+         //Modulo function of the 'returnDigits-th' power of 10
+         result = Long.toString(binary % DIGITS_POWER[returnDigits]);
+         
+         //Pad the result just in case
          while (result.length() < returnDigits) {
              result = "0" + result;
          }
          return result;
+     }
+     
+     private String currentTimeStampUTC(){
+ 	    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+ 	    long time = (cal.getTimeInMillis() / 1000) / timeStep;
+ 	    return Long.toString(time);
      }
 }

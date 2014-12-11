@@ -68,7 +68,7 @@ public class ExampleRunner {
 					System.out.println("NOTICE: A 0.0001 BTC fee will be added to your transaction.");
 					String stringVal = in.nextLine();
 					Coin value = Coin.parseCoin(stringVal);
-					controller.sendCoins(toAddress, value, false);
+					controller.sendCoins(toAddress, value);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
